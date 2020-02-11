@@ -22,11 +22,26 @@ class test_proximal(unittest.TestCase):
 		cvx_end
 		x
 		"""
-		self.assertEqual(
-			MTSGL.proximal._proximal_sgl(v=np.array([1, 2, -6, -8, 0]), tau=1.5, q=0, alpha=0.4),
-			np.array([ 1.,  2., -6., -6.5,  0.]),
-			"does not yield the correct proximal"
-		)
+		try:
+			np.testing.assert_array_almost_equal(
+				MTSGL.proximal._proximal_sgl(np.array([1, 2, -6, -8, 0]), 1.5, 'inf', 0.4),
+				np.array([0.4, 1.4, -5.4, -6.5, 0.])
+			)
+			res = True
+		except AssertionError as err:
+			res = False
+			print(err)
+		self.assertTrue(res, "did not yield the correct proximal (q='inf')")
+		try:
+			np.testing.assert_array_almost_equal(
+				MTSGL.proximal._proximal_sgl(np.array([1, 2, -6, -8, 0]), 1.5, 2, 0.4),
+				np.array([0.36118923, 1.26416229, -4.87605456, -6.68200069, 0.])
+			)
+			res = True
+		except AssertionError as err:
+			res = False
+			print(err)
+		self.assertTrue(res, "did not yield the correct proximal (q=2)")
 
 if __name__ == '__main__':
     unittest.main()

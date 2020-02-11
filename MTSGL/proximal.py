@@ -10,7 +10,7 @@ def _proximal_sgl(x, tau, q, alpha):
 		The vector at which the proximal operator is evaluated.
 	tau : float
 		The multiplicative factor for the penalty term.
-	q : int
+	q : int, str
 		The type of norm used ('inf': L_infty, 2: L_2)
 	alpha : float
 		The mixing of penalties (0 = group Lasso, 1 = Lasso)
