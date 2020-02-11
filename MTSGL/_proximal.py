@@ -106,7 +106,7 @@ def _l1_projection(y, r, alg = "Sort"):
 
 	Parameters
 	----------
-	y : nparray
+	y : ndarray
 		The vector to project.
 	r : float
 		The radius of the L1 ball on which to project.
@@ -152,7 +152,7 @@ def _simplex_projection_condat(yp, r):
 
 	Parameters
 	----------
-	yp : nparray
+	yp : ndarray
 		The vector to project, containing non-negative entries.
 	r : float
 		The radius of the simplex on which to project.
@@ -218,7 +218,7 @@ def _simplex_projection_sort(yp, r):
 
 	Parameters
 	----------
-	yp : nparray
+	yp : ndarray
 		The vector to project, containing non-negative entries.
 	r : float
 		The radius of the simplex on which to project.
