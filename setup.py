@@ -7,7 +7,7 @@ setup(
     license='MIT',
     packages=['MTSGL'],
     author='Simon Fontaine, Jinming Li and Yang Li',
-    author_email='simfont@umich.edu',
+    author_email='simfont@umich.edu, lijinmin@umich.edu, yangly@umich.edu',
     keywords=['example'],
     url='https://github.com/fontaine618/MTSGL'
 )

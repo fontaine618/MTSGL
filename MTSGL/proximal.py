@@ -1,6 +1,106 @@
 import numpy as np
 
-def l1_projection(y, r, alg = "Condat"):
+def _proximal_sgl(x, tau, q, alpha):
+	"""
+	Proximal operator on the Lq norm.
+
+	Parameters
+	----------
+	x : ndarray
+		The vector at which the proximal operator is evaluated.
+	tau : float
+		The multiplicative factor for the penalty term.
+	q : int
+		The type of norm used ('inf': L_infty, 2: L_2)
+	alpha : float
+		The mixing of penalties (0 = group Lasso, 1 = Lasso)
+
+	Returns
+	-------
+	x : ndarray
+		The proximal value.
+
+	Notes
+	-----
+	Computes
+	.. math::
+		prox_{\tau \Vert\cdot\Vert_q}(v) = \text{argmin}_{x} \tau P_{q,\alpha}(x)
+		+ \frac{1}{2}\Vert x-v\Vert_2^2
+	where
+	.. math::
+		P_{q,\alpha}(x) = (1-\alpha)\Vert x\Vert_q + \alpha \Vert x\Vert_1
+	"""
+	if not isinstance(x, np.ndarray):
+		raise TypeError("v must be a numpy array.")
+	if not isinstance(tau, float):
+		raise TypeError("tau must be a float")
+	if tau < 0:
+		raise ValueError("tau must be non-negative")
+	if not isinstance(alpha, float):
+		raise TypeError("alpha must be a float")
+	if not (alpha >= 0. and alpha <=1.):
+		raise ValueError("alpha must be in [0,1]")
+	if q in ['inf', 2]:
+		return _proximal_lq(_proximal_lq(x, alpha*tau, 1), (1-alpha)*tau, q)
+	else:
+		raise ValueError("q must be in ['inf', 2]")
+
+
+def _proximal_lq(x, tau, q):
+	"""
+	Proximal operator on the Lq norm.
+
+	Parameters
+	----------
+	x : ndarray
+		The vector at which the proximal operator is evaluated.
+	tau : float
+		The multiplicative factor for the penalty term.
+	q : int
+		The type of norm used ('inf': L_infty, 1: L_1, 2: L_2)
+
+	Returns
+	-------
+	x : ndarray
+		The proximal value.
+
+	Notes
+	-----
+	Computes
+	.. math::
+		prox_{\tau \Vert\cdot\Vert_q}(v) = \text{argmin}_{x} \tau \Vert x\Vert_q
+		+ \frac{1}{2}\Vert x-v\Vert_2^2
+
+	References
+	----------
+
+	Examples
+	--------
+
+
+	"""
+	# if not isinstance(x, np.ndarray):
+	# 	raise TypeError("v must be a numpy array.")
+	# if not isinstance(tau, float):
+	# 	raise TypeError("tau must be a float")
+	# if tau < 0:
+	# 	raise ValueError("tau must be non-negative")
+	# if not isinstance(q, int):
+	# 	raise TypeError("q must be an int")
+	if q == 1:
+		return np.sign(x) * np.maximum(np.abs(x) - tau, 0.)
+	elif q == 2:
+		norm = np.linalg.norm(x, 2)
+		return np.maximum(norm - tau, 0.) * x / norm if norm > 0. else x*0.
+	elif q == "inf":
+		return x - _l1_projection(x, tau)
+	else:
+		raise ValueError("q must be in ('inf': L_infty, 1: L_1, 2: L_2)")
+
+
+
+
+def _l1_projection(y, r, alg = "Sort"):
 	"""
 	Projection onto the L1 ball.
 
@@ -17,25 +117,14 @@ def l1_projection(y, r, alg = "Condat"):
 	-------
 	x : ndarray
 		The projection.
-
-	Notes
-	-----
-
-	References
-	----------
-
-	Examples
-	--------
-
-
 	"""
-	if not isinstance(y, np.ndarray):
-		raise TypeError("v must be a numpy array.")
-	if not isinstance(r, (int, float)):
-		raise TypeError("r must be numerical (int or float)")
-	if r < 0:
-		raise ValueError("r must be non-negative")
-	elif r == 0:
+	# if not isinstance(y, np.ndarray):
+	# 	raise TypeError("y must be a numpy array.")
+	# if not isinstance(r, (int, float)):
+	# 	raise TypeError("r must be numerical (int or float)")
+	# if r < 0:
+	# 	raise ValueError("r must be non-negative")
+	if r == 0:
 		return y*0
 	p = y.size
 	if p == 0:
@@ -48,14 +137,16 @@ def l1_projection(y, r, alg = "Condat"):
 	# retrieve signs
 	sgn = np.sign(y)
 	if alg == "Condat":
-		xp = simplex_projection_condat(yp, r)
+		xp = _simplex_projection_condat(yp, r)
 	elif alg == "Sort":
-		xp = simplex_projection_sort(yp, r)
+		xp = _simplex_projection_sort(yp, r)
+	else:
+		raise ValueError("alg must be in ['Condat', 'Sort']")
 	# simplex to L1 ball
 	x = xp * sgn
 	return x
 
-def simplex_projection_condat(yp, r):
+def _simplex_projection_condat(yp, r):
 	"""
 	Projection onto the simplex using Condat's algorithm.
 
@@ -74,30 +165,16 @@ def simplex_projection_condat(yp, r):
 	Notes
 	-----
 	The projection is performed using Condats's algorithm described in [1]_ with O(n)
-	observed runtime and O(n^2) worst-case runtime.
+	observed runtime and O(n^2) worst-case runtime. The current implementation is very slow
+	compared to the sorting algorithm.
 
 
 	References
 	----------
 	.. [1] Condat, L. "Fast Projection onto the Simplex and the l1 Ball," Math. Program. 158 (2016), no. 1-2, Ser. A,
 	575--585.
-
-	Examples
-	--------
-
-
 	"""
-	if not isinstance(yp, np.ndarray):
-		raise TypeError("v must be a numpy array.")
-	if not isinstance(r, (int, float)):
-		raise TypeError("r must be numerical (int or float)")
-	if r < 0:
-		raise ValueError("r must be non-negative")
-	elif r == 0:
-		return yp*0
 	p = yp.size
-	if p == 0:
-		return yp
 	# step 1
 	v = [yp[0]]
 	vt = []
@@ -135,7 +212,7 @@ def simplex_projection_condat(yp, r):
 	xp = np.array([max(ytmp - rho, 0) for ytmp in yp])
 	return xp
 
-def simplex_projection_sort(yp, r):
+def _simplex_projection_sort(yp, r):
 	"""
 	Projection onto the simplex using sorting.
 
@@ -159,23 +236,8 @@ def simplex_projection_sort(yp, r):
 	----------
 	.. [1] Blondel, M., Fujino, A. and Ueda, N. (2014) "Large-scale Multiclass Support Vector Machine Training via Euclidean
 	Projection onto the Simplex." ICPR 2014. Url: http://www.mblondel.org/publications/mblondel-icpr2014.pdf.
-
-	Examples
-	--------
-
-
 	"""
-	if not isinstance(yp, np.ndarray):
-		raise TypeError("v must be a numpy array.")
-	if not isinstance(r, (int, float)):
-		raise TypeError("r must be numerical (int or float)")
-	if r < 0:
-		raise ValueError("r must be non-negative")
-	elif r == 0:
-		return yp*0
 	p = yp.size
-	if p == 0:
-		return yp
 	u = np.sort(yp)[::-1]
 	cssv = np.cumsum(u) - r
 	ind = np.arange(p) + 1
