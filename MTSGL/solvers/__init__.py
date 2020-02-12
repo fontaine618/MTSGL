@@ -1,3 +1,3 @@
-import solvers._ridge
+import solvers.ridge
 
-__all__ = ["_ridge"]
+__all__ = ["ridge.py"]

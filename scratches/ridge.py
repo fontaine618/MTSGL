@@ -2,7 +2,7 @@ import numpy as np
 import MTSGL
 import timeit
 
-n = 100
+n = 1000
 p = 1000
 x = np.random.normal(0,1,(n,p))
 beta = np.random.normal(0,1,(p,1))
@@ -12,14 +12,14 @@ v = np.random.normal(0,0.1,(p,1))
 tau = 1.
 threshold = 1.0e-6
 
-loss = MTSGL._losses.LS(x, y)
+loss = MTSGL.losses.LS(x, y)
 
 start_time = timeit.default_timer()
-beta_gd = loss.ridge_gd(x, y, tau, v)
+beta_gd = loss.ridge_gd(tau, v)
 print(timeit.default_timer() - start_time)
 
 start_time = timeit.default_timer()
-beta_closed_form = loss.ridge_closed_form(x, y, tau, v)
+beta_closed_form = loss.ridge_closed_form(tau, v)
 print(timeit.default_timer() - start_time)
 
 print(np.allclose(
@@ -35,7 +35,7 @@ loss.loss(beta0, x, y)
 loss.gradient(beta0, x, y)
 loss.gradient(beta, x, y)
 
-beta_opt = MTSGL.solvers._ridge._ridge_gd(
+beta_opt = MTSGL.solvers.ridge.ridge_gd(
 	loss=loss,
 	beta0=beta0,
 	v=v,

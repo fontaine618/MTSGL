@@ -1,8 +1,8 @@
-import MTSGL
+import MTSGL.losses
 import numpy as np
-import pandas as pd
 
-def _ridge_gd(loss, beta0, v, tau, options={}, **kwargs):
+
+def ridge_gd(loss, beta0, v, tau, options=None):
 	"""
 	Optimizes a loss function with ridge regularization.
 
@@ -18,8 +18,6 @@ def _ridge_gd(loss, beta0, v, tau, options={}, **kwargs):
 		The regularization multiplier.
 	options : dict
 		Furhter options to control the optimization.
-	**kwargs :
-		Further arguments to pass to loss.
 
 	Notes
 	-----
@@ -38,14 +36,16 @@ def _ridge_gd(loss, beta0, v, tau, options={}, **kwargs):
 		The solution.
 
 	"""
-	if not isinstance(loss, MTSGL._losses.Loss):
+	if options is None:
+		options = {"threshold": 1.e-6, "verbose": False, "max_item": 100}
+	if not isinstance(loss, MTSGL.losses.Loss):
 		raise TypeError("loss must be a MTSGL Loss")
 	if "loss" not in dir(loss):
 		raise AttributeError("loss does not implement loss")
 	if "gradient" not in dir(loss):
 		raise AttributeError("loss does not implement gradient")
 	if "hessian_upper_bound" not in dir(loss):
-		raise AttributeError("loss does not have attribute hessian_upper_bound")
+		raise AttributeError("loss does not implement hessian_upper_bound")
 	if not isinstance(beta0, np.ndarray):
 		raise TypeError("beta0 must be a numpy array")
 	d = beta0.size
@@ -58,10 +58,10 @@ def _ridge_gd(loss, beta0, v, tau, options={}, **kwargs):
 	if tau < 0.:
 		raise ValueError("tau must be non-negative")
 	try:
-		loss.loss(beta0, **kwargs)
-		loss.gradient(beta0, **kwargs)
+		loss.loss(beta0)
+		loss.gradient(beta0)
 	except TypeError:
-		raise TypeError("could not evaluate loss or gradient using beta0 and {}".format(kwargs.keys))
+		raise TypeError("could not evaluate loss or gradient using beta0")
 	# options
 	if not isinstance(options, dict):
 		raise TypeError("options must be a dict")
@@ -73,7 +73,7 @@ def _ridge_gd(loss, beta0, v, tau, options={}, **kwargs):
 		if options["threshold"] < 1.0e-16:
 			raise ValueError("option threshold must be above 1e-16")
 	if "max_iter" not in options:
-		options["max_iter"] = 1000
+		options["max_iter"] = 100
 	else:
 		if not isinstance(options["max_iter"], int):
 			raise TypeError("option max_iter must be an int")
@@ -92,23 +92,22 @@ def _ridge_gd(loss, beta0, v, tau, options={}, **kwargs):
 	# first iteration
 	t = 0
 	beta = beta0
-	lossval = loss.loss(beta, **kwargs)
+	loss_val = loss.loss(beta)
 	penalty = (np.linalg.norm(beta - v, 2)**2) / (2.*tau)
-	obj = lossval + penalty
-	step = np.linalg.norm(beta - beta0, 2)
+	obj = loss_val + penalty
 	if options["verbose"]:
-		print("| {:<12} | {:>12.6f} | {:>12.6f} | {:>12} |".format(t, obj, lossval, ""))
+		print("| {:<12} | {:>12.6f} | {:>12.6f} | {:>12} |".format(t, obj, loss_val, ""))
 	while True:
-		t+=1
-		grad = loss.gradient(beta, **kwargs) + (beta - v) / tau
+		t += 1
+		grad = loss.gradient(beta) + (beta - v) / tau
 		beta_prev = beta
-		beta = beta - grad * 1./(loss.hessian_upper_bound + 1./tau)
-		lossval = loss.loss(beta, **kwargs)
+		beta = beta - grad * 1./(loss.hessian_upper_bound() + 1./tau)
+		loss_val = loss.loss(beta)
 		penalty = (np.linalg.norm(beta - v, 2)**2) / (2.*tau)
-		obj = lossval + penalty
+		obj = loss_val + penalty
 		step = np.linalg.norm(beta - beta_prev, 2)
 		if options["verbose"]:
-			print("| {:<12} | {:>12.6f} | {:>12.6f} | {:>12.6f} |".format(t, obj, lossval, step))
+			print("| {:<12} | {:>12.6f} | {:>12.6f} | {:>12.6f} |".format(t, obj, loss_val, step))
 		if t >= options["max_iter"]:
 			raise RuntimeError("ridge_gd did not converge in {} iterations".format(t))
 		if step < options["threshold"]:
@@ -116,9 +115,3 @@ def _ridge_gd(loss, beta0, v, tau, options={}, **kwargs):
 	if options["verbose"]:
 		print("="*(13+4*12))
 	return beta
-
-
-
-
-
-
