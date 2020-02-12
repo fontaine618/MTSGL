@@ -1,6 +1,8 @@
 import numpy as np
+from typing import Union
 
-def _proximal_sgl(x, tau, q, alpha):
+
+def _proximal_sgl(x: np.ndarray, tau: float, q: Union[str, int], alpha):
 	"""
 	Proximal operator on the Lq norm.
 
@@ -30,15 +32,9 @@ def _proximal_sgl(x, tau, q, alpha):
 	.. math::
 		P_{q,\alpha}(x) = (1-\alpha)\Vert x\Vert_q + \alpha \Vert x\Vert_1
 	"""
-	if not isinstance(x, np.ndarray):
-		raise TypeError("v must be a numpy array.")
-	if not isinstance(tau, float):
-		raise TypeError("tau must be a float")
 	if tau < 0:
 		raise ValueError("tau must be non-negative")
-	if not isinstance(alpha, float):
-		raise TypeError("alpha must be a float")
-	if not (alpha >= 0. and alpha <=1.):
+	if not (0. <= alpha <= 1.):
 		raise ValueError("alpha must be in [0,1]")
 	if q in ['inf', 2]:
 		return _proximal_lq(_proximal_lq(x, alpha*tau, 1), (1-alpha)*tau, q)
@@ -46,7 +42,7 @@ def _proximal_sgl(x, tau, q, alpha):
 		raise ValueError("q must be in ['inf', 2]")
 
 
-def _proximal_lq(x, tau, q):
+def _proximal_lq(x: np.ndarray, tau: float, q: Union[str, int]):
 	"""
 	Proximal operator on the Lq norm.
 
@@ -79,14 +75,6 @@ def _proximal_lq(x, tau, q):
 
 
 	"""
-	# if not isinstance(x, np.ndarray):
-	# 	raise TypeError("v must be a numpy array.")
-	# if not isinstance(tau, float):
-	# 	raise TypeError("tau must be a float")
-	# if tau < 0:
-	# 	raise ValueError("tau must be non-negative")
-	# if not isinstance(q, int):
-	# 	raise TypeError("q must be an int")
 	if q == 1:
 		return np.sign(x) * np.maximum(np.abs(x) - tau, 0.)
 	elif q == 2:
@@ -98,9 +86,7 @@ def _proximal_lq(x, tau, q):
 		raise ValueError("q must be in ('inf': L_infty, 1: L_1, 2: L_2)")
 
 
-
-
-def _l1_projection(y, r, alg = "Sort"):
+def _l1_projection(y: np.ndarray, r: float, alg: str = "Sort"):
 	"""
 	Projection onto the L1 ball.
 
@@ -118,12 +104,6 @@ def _l1_projection(y, r, alg = "Sort"):
 	x : ndarray
 		The projection.
 	"""
-	# if not isinstance(y, np.ndarray):
-	# 	raise TypeError("y must be a numpy array.")
-	# if not isinstance(r, (int, float)):
-	# 	raise TypeError("r must be numerical (int or float)")
-	# if r < 0:
-	# 	raise ValueError("r must be non-negative")
 	if r == 0:
 		return y*0
 	p = y.size
@@ -146,7 +126,8 @@ def _l1_projection(y, r, alg = "Sort"):
 	x = xp * sgn
 	return x
 
-def _simplex_projection_condat(yp, r):
+
+def _simplex_projection_condat(yp: np.ndarray, r: float):
 	"""
 	Projection onto the simplex using Condat's algorithm.
 
@@ -181,7 +162,7 @@ def _simplex_projection_condat(yp, r):
 	rho = v[0] - r
 	vl = 1
 	# step 2
-	for i in range(1,p):
+	for i in range(1, p):
 		ytmp = yp[i]
 		rho += (ytmp - rho) / (vl + 1)
 		if rho > yp[i] - r:
@@ -212,7 +193,8 @@ def _simplex_projection_condat(yp, r):
 	xp = np.array([max(ytmp - rho, 0) for ytmp in yp])
 	return xp
 
-def _simplex_projection_sort(yp, r):
+
+def _simplex_projection_sort(yp: np.ndarray, r: float):
 	"""
 	Projection onto the simplex using sorting.
 
@@ -234,8 +216,8 @@ def _simplex_projection_sort(yp, r):
 
 	References
 	----------
-	.. [1] Blondel, M., Fujino, A. and Ueda, N. (2014) "Large-scale Multiclass Support Vector Machine Training via Euclidean
-	Projection onto the Simplex." ICPR 2014. Url: http://www.mblondel.org/publications/mblondel-icpr2014.pdf.
+	.. [1] Blondel, M., Fujino, A. and Ueda, N. (2014) "Large-scale Multiclass Support Vector Machine Training via
+	Euclidean Projection onto the Simplex." ICPR 2014. Url: http://www.mblondel.org/publications/mblondel-icpr2014.pdf.
 	"""
 	p = yp.size
 	u = np.sort(yp)[::-1]

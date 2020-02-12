@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from typing import Union, Sequence, Optional, Any, Dict
 
 
 class Data:
@@ -32,10 +33,17 @@ class Data:
 	x_stdev : ndarray(n_tasks, n_features)
 		The standard deviation of each feature per task.
 	name : str
-		The type of dataset (Regression of Classification).
+		The type of dataset (Regression or Classification).
 	"""
 
-	def __init__(self, x, y, w=None, x_same=False, standardize=True):
+	def __init__(
+			self,
+			x: Union[Dict[Any, np.ndarray], np.ndarray],
+			y: Dict[Any, np.ndarray],
+			w: Optional[Dict[Any, np.ndarray]] = None,
+			x_same: bool = False,
+			standardize: bool = True
+		):
 		"""
 		Initialize the dataset.
 
@@ -53,6 +61,7 @@ class Data:
 		standardize : bool
 			Whether to standardize the features or not.
 		"""
+		self.name = "Loss"
 		self.x = x
 		self.y = y
 		self.w = w
@@ -73,12 +82,8 @@ class Data:
 		tasks = []
 		n_obs = {}
 		# Check y
-		if not isinstance(self.y, dict):
-			raise TypeError("y should be a dict")
 		for task, yk in self.y.items():
 			tasks.append(task)
-			if not isinstance(yk, np.ndarray):
-				raise TypeError("each element of y should be a ndarray: error for task {}".format(task))
 			yksize = yk.shape
 			if not len(yksize) == 2:
 				raise ValueError(
@@ -93,22 +98,18 @@ class Data:
 		# Check x
 		features = set()
 		if not self.x_same:
-			if not isinstance(self.x, dict):
-				raise TypeError("x should be a dict")
 			for task, xk in self.x.items():
 				if task not in tasks:
 					raise ValueError("tasks in y should match those in x: {} not found in {}".format(task, tasks))
-				if not isinstance(xk, np.ndarray):
-					raise TypeError("each element of x should be a ndarray: error for task {}".format(task))
 				xksize = xk.shape
-				if not len(xksize) == 1:
+				if not len(xksize) == 2:
 					raise ValueError(
 						"each element of x should be a 1D ndarray: error for task {} with size {}".format(task, xksize)
 					)
 				if not n_obs[task] == xksize[0]:
 					raise ValueError(
 						"y should have the same number of observations as x in task {}: received {} but expected {}"
-						.format(task, xksize[0], n_obs[task])
+							.format(task, xksize[0], n_obs[task])
 					)
 				if xk.dtype.names is None:
 					xk = np.core.records.fromarrays(
@@ -120,10 +121,8 @@ class Data:
 				features.update(xk.dtype.names)
 		else:
 			xk = self.x
-			if not isinstance(xk, np.ndarray):
-				raise TypeError("x should be a ndarray")
 			xksize = xk.shape
-			if not len(xksize) == 1:
+			if not len(xksize) == 2:
 				raise ValueError(
 					"x should be a 1D ndarray:received size {}".format(xksize)
 				)
@@ -141,13 +140,9 @@ class Data:
 			features.update(self.x.dtype.names)
 		# Check w
 		if self.w is not None:
-			if not isinstance(self.y, dict):
-				raise TypeError("w should be a dict")
 			for task, wk in self.w.items():
 				if task not in tasks:
 					raise ValueError("tasks in w should match those in x: {} not found in {}".format(task, tasks))
-				if not isinstance(wk, np.ndarray):
-					raise TypeError("each element of w should be a ndarray: error for task {}".format(task))
 				wksize = wk.shape
 				if not len(wksize) == 2:
 					raise ValueError(
@@ -179,7 +174,7 @@ class Data:
 
 	def summarize(self):
 		out = ""
-		out += "MTSGL "+self.name+" dataset\n"
+		out += "MTSGL " + self.name + " dataset\n"
 		out += "Tasks (Nb. Observations):\n".format(self.n_tasks)
 		for task, nk in self.n_obs.items():
 			out += "    {} ({})\n".format(task, nk)
@@ -191,7 +186,7 @@ class Data:
 	def __str__(self):
 		return self.summarize()
 
-	def _check_features(self, standardize=True):
+	def _check_features(self, standardize: bool = True):
 		"""
 		Performs some preparation of the features.
 
@@ -262,9 +257,16 @@ class RegressionData(Data):
 	A Regression dataset.
 	"""
 
-	def __init__(self, x, y, w=None, x_same=False, standardize=True):
-		self.name = "Regression"
+	def __init__(
+			self,
+			x: Union[Dict[Any, np.ndarray], np.ndarray],
+			y: Dict[Any, np.ndarray],
+			w: Dict[Any, np.ndarray] = None,
+			x_same: bool = False,
+			standardize: bool = True
+		):
 		super().__init__(x, y, w, x_same, standardize)
+		self.name = "Regression"
 
 
 class ClassificationData(Data):
@@ -276,13 +278,26 @@ class ClassificationData(Data):
 	Class membership is encoded as 0/1.
 	"""
 
-	def __init__(self, x, y, w=None, x_same=False, standardize=True):
-		self.name = "Classification"
+	def __init__(
+			self,
+			x: Union[Dict[Any, np.ndarray], np.ndarray],
+			y: Dict[Any, np.ndarray],
+			w: Dict[Any, np.ndarray] = None,
+			x_same: bool = False,
+			standardize: bool = True
+		):
 		super().__init__(x, y, w, x_same, standardize)
-		#TODO check that y is encoded as 0/1.
+		self.name = "Classification"
+# TODO check that y is encoded as 0/1.
 
 
-def _longdf_to_dict(df, y_cols, task_col=None, w_col=None, x_cols=None):
+def _longdf_to_dict(
+		df: pd.DataFrame,
+		y_cols: Union[str, Sequence[str]],
+		task_col: Optional[str] = None,
+		w_col: Optional[str] = None,
+		x_cols: Optional[Sequence[str]] = None
+):
 	"""
 	Transforms a data frame into the appropriate dict structure for MTSGL Datasets.
 
@@ -349,7 +364,7 @@ def _longdf_to_dict(df, y_cols, task_col=None, w_col=None, x_cols=None):
 			raise TypeError("all entries of x_cols should be str")
 		colnames.extend(x_cols)
 	diff = set(colnames) - set(df.columns)
-	if len(diff)>0:
+	if len(diff) > 0:
 		raise ValueError("could not match {} from the columns of df".format(diff))
 	if len(colnames) > len(set(colnames)):
 		raise ValueError("repeated column names provided")
@@ -358,19 +373,17 @@ def _longdf_to_dict(df, y_cols, task_col=None, w_col=None, x_cols=None):
 	# construct data
 	x = {}
 	y = {}
+	if w_col is not None:
+		w = {}
 	if shared:
 		x = df[x_cols].to_records(index=False)
 		tasks = set(y_cols)
-		if w_col is not None:
-			w = {}
 		for task in tasks:
 			y[task] = df[task].to_numpy().reshape(-1, 1)
 			if w_col is not None:
 				w[task] = df[w_col].to_numpy().reshape(-1, 1)
 	else:
 		tasks = set(df[task_col])
-		if w_col is not None:
-			w = {}
 		for task in tasks:
 			df_task = df.loc[df[task_col] == task]
 			y[task] = df_task[y_cols].to_numpy().reshape(-1, 1)
@@ -382,4 +395,3 @@ def _longdf_to_dict(df, y_cols, task_col=None, w_col=None, x_cols=None):
 		data["w"] = w
 	data["x_same"] = shared
 	return data
-
