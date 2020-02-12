@@ -1,4 +1,4 @@
 import _proximal
 import _losses
-import _solvers
+import solvers
 import _data
