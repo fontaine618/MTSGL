@@ -1,5 +1,5 @@
 import numpy as np
-import MTSGL
+import MTSGL.solvers
 
 
 class Loss:
@@ -24,6 +24,7 @@ class Loss:
 		pass
 
 
+#TODO split child classes into different files, I don't know how ...
 class LS(Loss):
 	def __init__(self, x: np.ndarray, y: np.ndarray):
 		super().__init__(x, y)
@@ -47,7 +48,7 @@ class LS(Loss):
 		return np.linalg.solve(mat, np.matmul(self.x.transpose(), self.y) / self.n + v / tau)
 
 	def ridge(self, tau: float, v: np.ndarray, **kwargs):
-		return MTSGL.solvers.ridge.ridge(
+		return MTSGL.solvers.ridge(
 			loss=self,
 			x0=np.zeros((self.p, 1)),
 			v=v,

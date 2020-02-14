@@ -34,7 +34,7 @@ data.x_stdev
 
 import numpy as np
 import pandas as pd
-import MTSGL
+import MTSGL._data
 
 n = 10
 p = 3
@@ -49,7 +49,7 @@ df = pd.DataFrame(data={
 for i in range(p):
 	df["var"+str(i+1)] = np.random.normal(0, 1, (n * K))
 
-data_raw = MTSGL._data._longdf_to_dict(df, y_cols=["y","task"])
+data_raw = MTSGL._data.utils._longdf_to_dict(df, y_cols=["y","task"])
 
 data = MTSGL._data.RegressionData(**data_raw)
 print(data)

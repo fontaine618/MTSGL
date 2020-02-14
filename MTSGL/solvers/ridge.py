@@ -1,11 +1,10 @@
 from typing import Tuple
-
-import MTSGL.losses
+from MTSGL.losses import Loss
 import numpy as np
 
 
 def ridge(
-		loss: MTSGL.losses.Loss,
+		loss: Loss,
 		x0: np.ndarray,
 		v: np.ndarray,
 		tau: float,

@@ -1,6 +1,5 @@
 from typing import Union, Sequence, Optional
 import MTSGL._data
-import numpy as np
 import pandas as pd
 
 REGRESSION_LOSSES = ["ls"]

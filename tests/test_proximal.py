@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 import MTSGL._proximal
 
-class test_proximal(unittest.TestCase):
+class TestProximal(unittest.TestCase):
 
 	def test_proximal_sgl(self):
 		"""
