@@ -15,7 +15,15 @@ threshold = 1.0e-6
 loss = MTSGL.losses.LS(x, y)
 
 start_time = timeit.default_timer()
-beta_gd = loss.ridge_gd(tau, v)
+beta_gd = loss.ridge(tau, v, "GD")
+print(timeit.default_timer() - start_time)
+
+start_time = timeit.default_timer()
+beta_nesterov = loss.ridge(tau, v, method="Nesterov")
+print(timeit.default_timer() - start_time)
+
+start_time = timeit.default_timer()
+beta_nesterov = loss.ridge(tau, v, method="Nesterov", adaptive_restart=False)
 print(timeit.default_timer() - start_time)
 
 start_time = timeit.default_timer()
@@ -23,26 +31,12 @@ beta_closed_form = loss.ridge_closed_form(tau, v)
 print(timeit.default_timer() - start_time)
 
 print(np.allclose(
+	beta_closed_form,
 	beta_gd,
+	atol=1.0e-6
+))
+print(np.allclose(
+	beta_nesterov,
 	beta_closed_form,
 	atol=1.0e-6
 ))
-
-
-loss.hessian_upper_bound
-loss.hessian_lower_bound
-loss.loss(beta0, x, y)
-loss.gradient(beta0, x, y)
-loss.gradient(beta, x, y)
-
-beta_opt = MTSGL.solvers.ridge.ridge_gd(
-	loss=loss,
-	beta0=beta0,
-	v=v,
-	tau=tau,
-	x=x,
-	y=y
-)
-
-np.linalg.eigvalsh(np.matmul(x.transpose(), x))
-np.linalg.svd(x)[1]**2

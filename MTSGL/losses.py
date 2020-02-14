@@ -43,19 +43,18 @@ class LS(Loss):
 	def predict(self, beta: np.ndarray):
 		return self._lin_predictor(beta, self.x)
 
-	def ridge(self, tau: float, v: np.ndarray):
-		return self.ridge_closed_form(tau, v)  # faster n>p, slower n<p
-
 	def ridge_closed_form(self, tau: float, v: np.ndarray):
 		mat = np.matmul(self.x.transpose(), self.x) / self.n + np.eye(self.p) / tau
 		return np.linalg.solve(mat, np.matmul(self.x.transpose(), self.y)/self.n + v / tau)
 
-	def ridge_gd(self, tau: float, v: np.ndarray):
+	def ridge(self, tau: float, v: np.ndarray, method="Nesterov", **kwargs):
 		return MTSGL.solvers.ridge.ridge_gd(
 			loss=self,
-			beta0=np.zeros((self.p, 1)),
+			x0=np.zeros((self.p, 1)),
 			v=v,
-			tau=tau
+			tau=tau,
+			method=method,
+			**kwargs
 		)[0]
 
 	def hessian_upper_bound(self):
