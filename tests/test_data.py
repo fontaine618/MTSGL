@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-import MTSGL._data
+import MTSGL.data
 
 
 class TestData(unittest.TestCase):

@@ -18,5 +18,3 @@ model = MTSGL.models.LS(df, y_cols="y", task_col="task", w_col="w")
 
 print(model.data)
 
-print(model.data_raw)
-

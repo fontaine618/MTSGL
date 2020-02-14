@@ -1,5 +1,5 @@
-import _data
-import _proximal
+import data
+import proximal
 import models
 import losses
 import solvers

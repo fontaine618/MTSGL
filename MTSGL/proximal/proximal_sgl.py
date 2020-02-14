@@ -1,13 +1,13 @@
 import numpy as np
 from typing import Union
-import MTSGL._proximal._projections
+import MTSGL.proximal._projections
 
 
-def _proximal_sgl(
+def proximal_sgl(
 		x: np.ndarray,
 		tau: float,
 		q: Union[str, int],
-		alpha
+		alpha: float
 ):
 	"""
 	Proximal operator on the Lq norm.
@@ -43,7 +43,12 @@ def _proximal_sgl(
 	if not (0. <= alpha <= 1.):
 		raise ValueError("alpha must be in [0,1]")
 	if q in ['inf', 2]:
-		return _proximal_lq(_proximal_lq(x, alpha*tau, 1), (1-alpha)*tau, q)
+		if alpha == 0.:  # group Lasso, skip soft-thresholding
+			return _proximal_lq(x, tau, q)
+		elif alpha == 1.:  # Lasso, skip prox_Lq
+			return _proximal_lq(x, tau, 1)
+		else:  # SGL
+			return _proximal_lq(_proximal_lq(x, alpha * tau, 1), (1 - alpha) * tau, q)
 	else:
 		raise ValueError("q must be in ['inf', 2]")
 
@@ -91,7 +96,7 @@ def _proximal_lq(
 		norm = np.linalg.norm(x, 2)
 		return np.maximum(norm - tau, 0.) * x / norm if norm > 0. else x*0.
 	elif q == "inf":
-		return x - MTSGL._proximal._projections._l1_projection(x, tau)
+		return x - MTSGL.proximal._projections._l1_projection(x, tau)
 	else:
 		raise ValueError("q must be in ('inf': L_infty, 1: L_1, 2: L_2)")
 

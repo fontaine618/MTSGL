@@ -31,7 +31,7 @@ class Data:
 		The mean of each feature per task.
 	x_stdev : ndarray(n_tasks, n_features)
 		The standard deviation of each feature per task.
-	name : str
+	__name : str
 		The type of dataset (Regression or Classification).
 	"""
 
@@ -60,7 +60,7 @@ class Data:
 		standardize : bool
 			Whether to standardize the features or not.
 		"""
-		self.name = "Loss"
+		self.__name = "Loss"
 		self.x = x
 		self.y = y
 		self.w = w
@@ -121,7 +121,7 @@ class Data:
 		else:
 			xk = self.x
 			xksize = xk.shape
-			if not len(xksize) == 2:
+			if not len(xksize) <= 2:
 				raise ValueError(
 					"x should be a 1D ndarray:received size {}".format(xksize)
 				)
@@ -173,7 +173,7 @@ class Data:
 
 	def summarize(self):
 		out = ""
-		out += "MTSGL " + self.name + " dataset\n"
+		out += "MTSGL " + self.__name + " dataset\n"
 		out += "Tasks (Nb. Observations):\n".format(self.n_tasks)
 		for task, nk in self.n_obs.items():
 			out += "    {} ({})\n".format(task, nk)
@@ -265,7 +265,7 @@ class RegressionData(Data):
 			standardize: bool = True
 		):
 		super().__init__(x, y, w, x_same, standardize)
-		self.name = "Regression"
+		self.__name = "Regression"
 
 
 class ClassificationData(Data):
@@ -286,5 +286,5 @@ class ClassificationData(Data):
 			standardize: bool = True
 		):
 		super().__init__(x, y, w, x_same, standardize)
-		self.name = "Classification"
+		self.__name = "Classification"
 # TODO check that y is encoded as 0/1.

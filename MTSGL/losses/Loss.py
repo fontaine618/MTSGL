@@ -24,11 +24,11 @@ class Loss:
 		pass
 
 
-#TODO split child classes into different files, I don't know how ...
+# TODO split child classes into different files, I don't know how ...
 class LS(Loss):
 	def __init__(self, x: np.ndarray, y: np.ndarray):
 		super().__init__(x, y)
-		self.name = "Least Squares"
+		self.__name = "Least Squares"
 		self.n, self.p = x.shape
 		eig = np.power(np.linalg.svd(self.x, compute_uv=False), 2) / self.n
 		self.L = max(eig)
@@ -67,7 +67,7 @@ class WLS(Loss):
 	def __init__(self, x: np.ndarray, y: np.ndarray, w: np.ndarray):
 		super().__init__(x, y)
 		self.w = w
-		self.name = "Weighted Least Squares"
+		self.__name = "Weighted Least Squares"
 
 	def loss(self, beta: np.ndarray):
 		residuals = np.matmul(self.x, beta) - self.y

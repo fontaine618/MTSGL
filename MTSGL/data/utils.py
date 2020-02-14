@@ -2,7 +2,7 @@ import pandas as pd
 from typing import Union, Sequence, Optional
 
 
-def _longdf_to_dict(
+def longdf_to_dict(
 		df: pd.DataFrame,
 		y_cols: Union[str, Sequence[str]],
 		task_col: Optional[str] = None,
