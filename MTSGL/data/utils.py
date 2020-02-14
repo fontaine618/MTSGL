@@ -1,5 +1,6 @@
 import pandas as pd
-from typing import Union, Sequence, Optional
+import numpy as np
+from typing import Union, Sequence, Optional, Dict
 
 
 def longdf_to_dict(
@@ -8,7 +9,7 @@ def longdf_to_dict(
 		task_col: Optional[str] = None,
 		w_col: Optional[str] = None,
 		x_cols: Optional[Sequence[str]] = None
-):
+) -> Dict[str, Union[bool, Dict, np.ndarray]]:
 	"""
 	Transforms a data frame into the appropriate dict structure for MTSGL Datasets.
 
