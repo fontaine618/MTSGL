@@ -102,9 +102,9 @@ class Data:
 				if task not in tasks:
 					raise ValueError("tasks in y should match those in x: {} not found in {}".format(task, tasks))
 				xksize = xk.shape
-				if not len(xksize) == 2:
+				if not len(xksize) <= 2:
 					raise ValueError(
-						"each element of x should be a 1D ndarray: error for task {} with size {}".format(task, xksize)
+						"each element of x should be a 1D or 2D ndarray: error for task {} with size {}".format(task, xksize)
 					)
 				if not n_obs[task] == xksize[0]:
 					raise ValueError(

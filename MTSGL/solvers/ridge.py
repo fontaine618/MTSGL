@@ -1,16 +1,16 @@
-from typing import List
+from typing import Tuple
 
 import MTSGL.losses
 import numpy as np
 
 
-def ridge_gd(
+def ridge(
 		loss: MTSGL.losses.Loss,
 		x0: np.ndarray,
 		v: np.ndarray,
 		tau: float,
 		**kwargs
-):
+) -> Tuple[np.ndarray, int]:
 	"""
 	Optimizes a loss function with ridge regularization.
 
@@ -104,4 +104,3 @@ def ridge_gd(
 			break
 	print("ridge ({}) terminated in {} iterations".format(method, t))
 	return xt, t
-

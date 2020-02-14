@@ -15,7 +15,7 @@ threshold = 1.0e-6
 loss = MTSGL.losses.LS(x, y)
 
 start_time = timeit.default_timer()
-beta_gd = loss.ridge(tau, v, "GD")
+beta_gd = loss.ridge(tau, v, method="GD")
 print(timeit.default_timer() - start_time)
 
 start_time = timeit.default_timer()

@@ -8,9 +8,8 @@ class Loss:
 		self.y = y
 		pass
 
-	@staticmethod
-	def _lin_predictor(beta, x):
-		return np.matmul(x, beta)
+	def lin_predictor(self, beta):
+		return np.matmul(self.x, beta)
 
 	def loss(self, beta):
 		pass
@@ -35,25 +34,24 @@ class LS(Loss):
 		self.mu = min(eig)
 
 	def loss(self, beta: np.ndarray):
-		return (np.linalg.norm(np.matmul(self.x, beta) - self.y, 2) ** 2) / (self.n*2)
+		return (np.linalg.norm(np.matmul(self.x, beta) - self.y, 2) ** 2) / (self.n * 2)
 
 	def gradient(self, beta: np.ndarray):
 		return np.matmul(self.x.transpose(), np.matmul(self.x, beta) - self.y) / self.n
 
 	def predict(self, beta: np.ndarray):
-		return self._lin_predictor(beta, self.x)
+		return self.lin_predictor(beta)
 
 	def ridge_closed_form(self, tau: float, v: np.ndarray):
 		mat = np.matmul(self.x.transpose(), self.x) / self.n + np.eye(self.p) / tau
-		return np.linalg.solve(mat, np.matmul(self.x.transpose(), self.y)/self.n + v / tau)
+		return np.linalg.solve(mat, np.matmul(self.x.transpose(), self.y) / self.n + v / tau)
 
-	def ridge(self, tau: float, v: np.ndarray, method="Nesterov", **kwargs):
-		return MTSGL.solvers.ridge.ridge_gd(
+	def ridge(self, tau: float, v: np.ndarray, **kwargs):
+		return MTSGL.solvers.ridge.ridge(
 			loss=self,
 			x0=np.zeros((self.p, 1)),
 			v=v,
 			tau=tau,
-			method=method,
 			**kwargs
 		)[0]
 
@@ -78,4 +76,4 @@ class WLS(Loss):
 		return np.matmul(self.x.transpose(), self.w * (np.matmul(self.x, beta) - self.y))
 
 	def predict(self, beta: np.ndarray):
-		return self._lin_predictor(beta, self.x)
+		return self.lin_predictor(beta)
