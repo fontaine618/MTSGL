@@ -11,7 +11,7 @@ def ridge(
 		**kwargs
 ) -> Tuple[np.ndarray, int]:
 	"""
-	Optimizes a loss function with ridge regularization.
+	Optimizes a loss function with ridge regularizations.
 
 	Parameters
 	----------
@@ -22,7 +22,7 @@ def ridge(
 	v : ndarray
 		The vector in the regularizer.
 	tau : float
-		The regularization multiplier.
+		The regularizations multiplier.
 	kwargs : dict
 		Further options to control the optimization.
 

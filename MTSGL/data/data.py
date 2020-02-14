@@ -60,7 +60,7 @@ class Data:
 		standardize : bool
 			Whether to standardize the features or not.
 		"""
-		self.__name = "Loss"
+		self.__type = ""
 		self.x = x
 		self.y = y
 		self.w = w
@@ -265,7 +265,7 @@ class RegressionData(Data):
 			standardize: bool = True
 		):
 		super().__init__(x, y, w, x_same, standardize)
-		self.__name = "Regression"
+		self.__type = "Regression"
 
 
 class ClassificationData(Data):
@@ -286,5 +286,5 @@ class ClassificationData(Data):
 			standardize: bool = True
 		):
 		super().__init__(x, y, w, x_same, standardize)
-		self.__name = "Classification"
+		self.__type = "Classification"
 # TODO check that y is encoded as 0/1.

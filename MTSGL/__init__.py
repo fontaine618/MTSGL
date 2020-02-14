@@ -1,7 +1,8 @@
-import data
+from data import *
 import proximal
 import models
 import losses
 import solvers
+import regularizations
 
-__all__ = ["_data", "_proximal", "losses", "models", "solvers"]
+__all__ = ["data", "proximal", "losses", "models", "solvers", "regularizations", "Data"]

@@ -81,14 +81,6 @@ def _proximal_lq(
 	.. math::
 		prox_{\tau \Vert\cdot\Vert_q}(v) = \text{argmin}_{x} \tau \Vert x\Vert_q
 		+ \frac{1}{2}\Vert x-v\Vert_2^2
-
-	References
-	----------
-
-	Examples
-	--------
-
-
 	"""
 	if q == 1:
 		return np.sign(x) * np.maximum(np.abs(x) - tau, 0.)
