@@ -2,6 +2,7 @@ import numpy as np
 from typing import Union, Optional, Any, Dict
 
 
+# TODO create data_from_df wrapper (_longdf_to_dict + Data init)
 class Data:
 	"""
 	A dataset.
@@ -60,7 +61,7 @@ class Data:
 		standardize : bool
 			Whether to standardize the features or not.
 		"""
-		self.__type = ""
+		self.__type = None
 		self.x = x
 		self.y = y
 		self.w = w
