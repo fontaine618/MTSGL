@@ -66,12 +66,10 @@ def ridge(
 		raise NotImplementedError("Method '{}' is not implemented. Only {} are implemented".format(method, METHODS))
 	# initialize step size to hessian upper bound
 	try:
-		if method == "nesterov":
+		if method == "nesterov":  # 1/L
 			step_size = 1. / (loss.hessian_upper_bound() + 1. / tau)
-		elif method == "gd":
-			L = loss.hessian_upper_bound() + 1. / tau
-			mu = 1. / tau
-			step_size = 2. / (L + mu)
+		elif method == "gd":  # SC and SS case: 2/(L+mu)
+			step_size = 2. / (loss.hessian_upper_bound() + 2. / tau)
 	except:
 		raise ValueError("loss does not implement hessian_upper_bound()")
 	# first iteration

@@ -1,5 +1,7 @@
 import unittest
 import MTSGL.regularizations
+import numpy as np
+import MTSGL.proximal
 
 
 class TestSparseGroupLasso(unittest.TestCase):
@@ -7,7 +9,7 @@ class TestSparseGroupLasso(unittest.TestCase):
 	def test_sparse_group_lasso(self):
 		reg = MTSGL.regularizations.SparseGroupLasso(2, 0.5)
 		self.assertEqual(
-			reg.__str__(),
+			reg.__str__,
 			"SparseGroupLasso(q = 2, alpha = 0.5)",
 			"Failed to create name for SparseGroupLasso"
 		)
@@ -15,7 +17,7 @@ class TestSparseGroupLasso(unittest.TestCase):
 	def test_group_lasso(self):
 		reg = MTSGL.regularizations.GroupLasso('inf')
 		self.assertEqual(
-			reg.__str__(),
+			reg.__str__,
 			"GroupLasso(q = inf)",
 			"Failed to create name for GroupLasso"
 		)
@@ -23,10 +25,23 @@ class TestSparseGroupLasso(unittest.TestCase):
 	def test_lasso(self):
 		reg = MTSGL.regularizations.Lasso()
 		self.assertEqual(
-			reg.__str__(),
+			reg.__str__,
 			"Lasso",
 			"Failed to create name for Lasso"
 		)
+
+	def test_proximal(self):
+		reg = MTSGL.regularizations.SparseGroupLasso('inf', 0.5)
+		x = np.arange(-2, 4).reshape(3, 2)
+		prox = reg.proximal(x, 1.)
+		sol = np.array([[-1.25, -0.5], [0., 0.5], [1.25, 2.]])
+		try:
+			np.testing.assert_array_almost_equal(prox, sol)
+			res = True
+		except AssertionError as err:
+			res = False
+			print(err)
+		self.assertTrue(res, "Failed to produce the correct proximal.")
 
 
 if __name__ == '__main__':

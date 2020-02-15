@@ -1,5 +1,7 @@
 from .Regularization import Regularization
 from typing import Union
+import numpy as np
+import MTSGL.proximal
 
 
 class SparseGroupLasso(Regularization):
@@ -20,6 +22,33 @@ class SparseGroupLasso(Regularization):
 
 	def _str_parm(self):
 		return "q = {}, alpha = {}".format(self.q, self.alpha)
+
+	def proximal(
+			self,
+			x: np.ndarray,
+			tau: float
+	):
+		"""
+
+		Parameters
+		----------
+		x: ndarray
+			The matrix at which to evaluate the proximal (p, K)
+		tau: float
+			The multiplicative factor for the penalty term.
+
+		Returns
+		-------
+		prox : ndarray
+			The proximal value (p, K).
+
+		"""
+		return np.apply_along_axis(
+			lambda xcol: MTSGL.proximal.proximal_sgl(xcol, tau, self.q, self.alpha),
+			0,
+			x
+		)
+
 
 
 class GroupLasso(SparseGroupLasso):
