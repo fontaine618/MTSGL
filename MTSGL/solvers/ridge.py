@@ -37,6 +37,8 @@ def ridge(
 	where :math:`x, V\in\mathbb{R}^d` and where the gradient of L w.r.t. :math:`x`
 	is readily available.
 
+	In the LS case: Nesterov is almost always the fastest; not much than gd. It is particularly better when p>n.
+
 	Returns
 	-------
 	xt : ndarray
@@ -64,7 +66,12 @@ def ridge(
 		raise NotImplementedError("Method '{}' is not implemented. Only {} are implemented".format(method, METHODS))
 	# initialize step size to hessian upper bound
 	try:
-		step_size = 1. / (loss.hessian_upper_bound() + 1. / tau)
+		if method == "nesterov":
+			step_size = 1. / (loss.hessian_upper_bound() + 1. / tau)
+		elif method == "gd":
+			L = loss.hessian_upper_bound() + 1. / tau
+			mu = 1. / tau
+			step_size = 2. / (L + mu)
 	except:
 		raise ValueError("loss does not implement hessian_upper_bound()")
 	# first iteration

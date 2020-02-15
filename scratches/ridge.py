@@ -2,7 +2,7 @@ import numpy as np
 import MTSGL
 import timeit
 
-n = 1000
+n = 100
 p = 1000
 x = np.random.normal(0,1,(n,p))
 beta = np.random.normal(0,1,(p,1))
@@ -20,10 +20,6 @@ print(timeit.default_timer() - start_time)
 
 start_time = timeit.default_timer()
 beta_nesterov = loss.ridge(tau, v, method="Nesterov")
-print(timeit.default_timer() - start_time)
-
-start_time = timeit.default_timer()
-beta_nesterov = loss.ridge(tau, v, method="Nesterov", adaptive_restart=False)
 print(timeit.default_timer() - start_time)
 
 start_time = timeit.default_timer()
