@@ -5,4 +5,7 @@ import solvers
 import regularizations
 from ADMM import *
 
-__all__ = ["data", "proximal", "losses", "solvers", "regularizations", "Data", "ADMM"]
+__all__ = [
+	"data", "proximal", "losses", "solvers", "regularizations", "Data", "ADMM",
+	"RegressionData", "ClassificationData"
+]

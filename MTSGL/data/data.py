@@ -2,7 +2,6 @@ import numpy as np
 from typing import Union, Optional, Any, Dict
 
 
-# TODO create data_from_df wrapper (_longdf_to_dict + Data init)
 class Data:
 	"""
 	A dataset.
@@ -273,6 +272,11 @@ class ClassificationData(Data):
 	"""
 	A (Binary) Classification dataset.
 
+	Attributes
+	----------
+	labels: dict[tuple[Any]]
+		The encoding of the two classes ordered by (0, 1)
+
 	Notes
 	-----
 	Class membership is encoded as 0/1.
@@ -288,4 +292,9 @@ class ClassificationData(Data):
 		):
 		super().__init__(x, y, w, x_same, standardize)
 		self.__type = "Classification"
-# TODO check that y is encoded as 0/1.
+		labels = {}
+		for task in self.tasks:
+			classes = sorted(np.unique(self.y[task]))
+			self.y[task] = np.vectorize(lambda y: 0 if y == classes[0] else 1)(self.y[task])
+			labels[task] = tuple(classes)
+		self.labels = labels

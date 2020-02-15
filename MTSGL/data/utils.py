@@ -2,8 +2,28 @@ import pandas as pd
 import numpy as np
 from typing import Union, Sequence, Optional, Dict
 
+from MTSGL.data import Data, ClassificationData, RegressionData
 
-def longdf_to_dict(
+
+def df_to_data(
+		df: pd.DataFrame,
+		y_cols: Union[str, Sequence[str]],
+		task_col: Optional[str] = None,
+		w_col: Optional[str] = None,
+		x_cols: Optional[Sequence[str]] = None
+) -> Data:
+	# check if all binary
+	is_binary = lambda x: len(set(x)) == 2
+	classification = all([is_binary(df[y]) for y in (y_cols if isinstance(y_cols, list) else [y_cols])])
+	# map to Data
+	data_dict = _longdf_to_dict(df, y_cols, task_col, w_col, x_cols)
+	if classification:
+		return ClassificationData(**data_dict)
+	else:
+		return RegressionData(**data_dict)
+
+
+def _longdf_to_dict(
 		df: pd.DataFrame,
 		y_cols: Union[str, Sequence[str]],
 		task_col: Optional[str] = None,
@@ -85,6 +105,7 @@ def longdf_to_dict(
 	# construct data
 	x = {}
 	y = {}
+	w = None
 	if w_col is not None:
 		w = {}
 	if shared:

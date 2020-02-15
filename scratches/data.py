@@ -53,3 +53,10 @@ data_raw = MTSGL.data.utils.longdf_to_dict(df, y_cols=["y", "task"])
 
 data = MTSGL.data.RegressionData(**data_raw)
 print(data)
+
+
+labels = {}
+for task in data.tasks:
+	classes = sorted(np.unique(data.y[task]))
+	data.y[task] = np.vectorize(lambda y: 0 if y == classes[0] else 1)(data.y[task])
+	labels[task] = classes

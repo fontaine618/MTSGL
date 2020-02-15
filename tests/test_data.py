@@ -17,7 +17,7 @@ class TestLongDfToDict(unittest.TestCase):
 			})
 			for i in range(p):
 				df["var" + str(i + 1)] = np.random.normal(0, 1, n)
-			data_raw = MTSGL.data.utils.longdf_to_dict(df, y_cols="y", w_col="w", task_col="task")
+			data_raw = MTSGL.data.utils._longdf_to_dict(df, y_cols="y", w_col="w", task_col="task")
 			self.assertEqual(len(data_raw), 4)
 			self.assertFalse(data_raw["x_same"])
 			self.assertEqual(len(data_raw["x"]), 3)
@@ -44,7 +44,7 @@ class TestLongDfToDict(unittest.TestCase):
 			})
 			for i in range(p):
 				df["var" + str(i + 1)] = np.random.normal(0, 1, n)
-			data_raw = MTSGL.data.utils.longdf_to_dict(df, y_cols=["y1", "y2"], w_col="w")
+			data_raw = MTSGL.data.utils._longdf_to_dict(df, y_cols=["y1", "y2"], w_col="w")
 			self.assertEqual(len(data_raw), 4)
 			self.assertTrue(data_raw["x_same"])
 			self.assertEqual(len(data_raw["y"]), 2)
@@ -91,6 +91,46 @@ class TestData(unittest.TestCase):
 			res = False
 			print(err)
 		self.assertTrue(res, "failed to construct RegressionData with common x")
+
+
+class TestDfToData(unittest.TestCase):
+
+	def test_regression(self):
+		n = 100
+		p = 5
+		df = pd.DataFrame(data={
+			"y": np.random.normal(0, 1, n),
+			"w": np.random.uniform(0, 1, n),
+			"task": np.random.choice([0, 1, 2], n)
+		})
+		for i in range(p):
+			df["var" + str(i + 1)] = np.random.normal(0, 1, n)
+		data = MTSGL.data.df_to_data(df, "y", "task", "w")
+		self.assertTrue(
+			isinstance(data, MTSGL.data.RegressionData),
+			"did not produce a RegressionData"
+		)
+
+	def test_classification(self):
+		n = 100
+		p = 5
+		df = pd.DataFrame(data={
+			"y": np.random.randint(5, 7, n),
+			"w": np.random.uniform(0, 1, n),
+			"task": np.random.choice([0, 1, 2], n)
+		})
+		for i in range(p):
+			df["var" + str(i + 1)] = np.random.normal(0, 1, n)
+		data = MTSGL.data.df_to_data(df, "y", "task", "w")
+		self.assertTrue(
+			isinstance(data, MTSGL.data.ClassificationData),
+			"did not produce a ClassificationData"
+		)
+		self.assertEqual(
+			data.labels,
+			{i: (5, 6) for i in range(3)},
+			"did not get the correct labels"
+		)
 
 
 if __name__ == '__main__':

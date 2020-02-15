@@ -27,7 +27,7 @@ class SparseGroupLasso(Regularization):
 			self,
 			x: np.ndarray,
 			tau: float
-	):
+	) -> np.ndarray:
 		"""
 
 		Parameters
@@ -44,7 +44,7 @@ class SparseGroupLasso(Regularization):
 
 		"""
 		return np.apply_along_axis(
-			lambda xcol: MTSGL.proximal.proximal_sgl(xcol, tau, self.q, self.alpha),
+			lambda x_col: MTSGL.proximal.proximal_sgl(x_col, tau, self.q, self.alpha),
 			0,
 			x
 		)
