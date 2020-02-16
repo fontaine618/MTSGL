@@ -14,5 +14,5 @@ class Regularization:
 		str_parm = self._str_parm()
 		return self.name + ("({})".format(str_parm) if str_parm is not None else "")
 
-	def proximal(self, beta_mat: np.ndarray, **kwargs) -> np.ndarray:
+	def proximal(self, x: np.ndarray, tau: float) -> np.ndarray:
 		pass

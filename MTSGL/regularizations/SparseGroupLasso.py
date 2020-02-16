@@ -6,11 +6,7 @@ import MTSGL.proximal
 
 class SparseGroupLasso(Regularization):
 
-	def __init__(
-			self,
-			q: Union[str, int] = 2,
-			alpha: float = 0.5
-	):
+	def __init__(self, q: Union[str, int] = 2, alpha: float = 0.5) -> None:
 		super().__init__()
 		if q not in ["inf", 2]:
 			raise NotImplementedError("q = {} not implemented yet".format(q))
@@ -20,14 +16,10 @@ class SparseGroupLasso(Regularization):
 		self.alpha = alpha
 		self.name = "SparseGroupLasso"
 
-	def _str_parm(self):
+	def _str_parm(self) -> str:
 		return "q = {}, alpha = {}".format(self.q, self.alpha)
 
-	def proximal(
-			self,
-			x: np.ndarray,
-			tau: float
-	) -> np.ndarray:
+	def proximal(self, x: np.ndarray, tau: float) -> np.ndarray:
 		"""
 
 		Parameters
@@ -48,7 +40,6 @@ class SparseGroupLasso(Regularization):
 			0,
 			x
 		)
-
 
 
 class GroupLasso(SparseGroupLasso):
