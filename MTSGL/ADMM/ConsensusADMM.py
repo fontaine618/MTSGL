@@ -14,10 +14,13 @@ class ConsensusADMM(ADMM):
 			lam: float,
 			**kwargs
 	):
+		self.threshold_ridge_decrease = None
 		super().__init__(data, loss, reg, lam, **kwargs)
-		if "threshold_decrease_ridge" not in kwargs.keys():
-			self.threshold_decrease_ridge = 1.0e-1
+
+	def set_additional_options(self, **kwargs):
+		if "threshold_ridge_decrease" not in kwargs.keys():
+			self.threshold_ridge_decrease = 1.0e-1
 		else:
-			self.threshold_decrease_ridge = float(kwargs["threshold_decrease_ridge"])
-			if not 1.0e-3 <= self.threshold_decrease_ridge < 1.:
-				raise ValueError("threshold_decrease_ridge must be between 1.0e-1 and 1")
+			self.threshold_ridge_decrease = float(kwargs["threshold_ridge_decrease"])
+			if self.threshold_ridge_decrease < 1.0e-3:
+				raise ValueError("threshold_ridge_decrease must be above 1.0e-3")

@@ -32,7 +32,7 @@ def ridge(
 
 	.. math::
 
-		L(x) + \frac{1}{2\tau}\Vert x - V\Vert_2^2
+		L(x) + \frac{1}{2\tau}\Vert x - v\Vert_2^2
 
 	where :math:`x, V\in\mathbb{R}^d` and where the gradient of L w.r.t. :math:`x`
 	is readily available.
