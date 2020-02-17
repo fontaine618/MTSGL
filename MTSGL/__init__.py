@@ -1,11 +1,9 @@
-from data import *
+import data
 import proximal
 import losses
 import solvers
 import regularizations
-from ADMM import *
-
+import ADMM
 __all__ = [
-	"data", "proximal", "losses", "solvers", "regularizations", "Data", "ADMM",
-	"RegressionData", "ClassificationData"
+	"data", "proximal", "losses", "solvers", "regularizations", "ADMM",
 ]

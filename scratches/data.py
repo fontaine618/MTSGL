@@ -9,7 +9,7 @@ x = {i:np.random.normal(0,i+1,(n,p))+i for i in range(K)}
 y = {i:np.random.normal(0,1,(n,1)) for i in range(K)}
 w = {i:np.random.uniform(0,1,(n,1)) for i in range(K)}
 
-data = MTSGL.data.RegressionData(x[0], y, x_same=True)
+data = MTSGL.data.RegressionDataOld(x[0], y, x_same=True)
 print(data)
 
 data.x
@@ -51,7 +51,7 @@ for i in range(p):
 
 data_raw = MTSGL.data.utils.longdf_to_dict(df, y_cols=["y", "task"])
 
-data = MTSGL.data.RegressionData(**data_raw)
+data = MTSGL.data.RegressionDataOld(**data_raw)
 print(data)
 
 

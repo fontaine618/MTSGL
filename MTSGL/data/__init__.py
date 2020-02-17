@@ -1,4 +1,7 @@
-from .data import *
+from .dataold import *
 from .utils import *
+from .Data import *
+from .MultivariateData import *
+from .MultiTaskData import *
 
-__all__ = ["Data", "ClassificationData", "RegressionData", "df_to_data"]
+__all__ = ["utils", "Data", "MultivariateData", "MultiTaskData"]

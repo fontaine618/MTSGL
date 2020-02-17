@@ -1,4 +1,4 @@
-from MTSGL import Data
+from MTSGL.data.Data import Data
 from MTSGL.losses import Loss
 from MTSGL.regularizations import Regularization
 from .ADMM import ADMM

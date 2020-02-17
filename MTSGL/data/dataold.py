@@ -2,7 +2,7 @@ import numpy as np
 from typing import Union, Optional, Any, Dict
 
 
-class Data:
+class DataOld:
 	"""
 	A dataset.
 
@@ -251,7 +251,7 @@ class Data:
 			return self.x[task]
 
 
-class RegressionData(Data):
+class RegressionDataOld(DataOld):
 	"""
 	A Regression dataset.
 	"""
@@ -268,7 +268,7 @@ class RegressionData(Data):
 		self.__type = "Regression"
 
 
-class ClassificationData(Data):
+class ClassificationDataOld(DataOld):
 	"""
 	A (Binary) Classification dataset.
 
