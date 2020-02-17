@@ -15,7 +15,6 @@ class MultivariateData(Data):
 			x_cols: Optional[Sequence[str]],
 			standardize: bool = True
 	):
-		#  TODO put in docs that we disregard task_col
 		super().__init__()
 		self.__name__ = "MultivariateData"
 		#  tasks

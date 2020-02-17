@@ -20,6 +20,7 @@ def df_to_data(
 	except TypeError:
 		raise TypeError("y_cols must be a str or a non-empty list")
 	if n_y > 1:
+		#  TODO put in docs that we disregard task_col
 		#  MultivariateData case
 		if w_cols is not None:
 			if isinstance(w_cols, str):

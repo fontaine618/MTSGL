@@ -82,6 +82,7 @@ class TestDfToData(unittest.TestCase):
 			task_col="task",
 			x_cols=["var1", "var2", "var3"]
 		)
+		self.assertEqual(data.w.shape, (10, 1))
 
 	def test_Multivariate_multi_w(self):
 		n = 10
@@ -101,6 +102,7 @@ class TestDfToData(unittest.TestCase):
 			w_cols=["w1", "w2"],
 			x_cols=["var1", "var2", "var3"]
 		)
+		self.assertEqual(data.w.shape, (10, 2))
 
 	def test_Multivariate_no_x(self):
 		n = 10
@@ -119,6 +121,7 @@ class TestDfToData(unittest.TestCase):
 			task_col="task",
 			w_cols="w"
 		)
+		self.assertEqual(data.x.shape, (10, 6))
 
 	def test_MultiTask(self):
 		n = 10
@@ -137,6 +140,7 @@ class TestDfToData(unittest.TestCase):
 			w_cols="w",
 			x_cols=["var1", "var2", "var3"]
 		)
+		self.assertEqual(data.n_obs, {"0": 4, "1": 3, "2": 3})
 
 	def test_MultiTask_no_x(self):
 		n = 10
@@ -153,6 +157,10 @@ class TestDfToData(unittest.TestCase):
 			y_cols="y",
 			task_col="task",
 			w_cols="w"
+		)
+		self.assertEqual(
+			[data.x[task].shape for task in data.tasks],
+			[(4, 5), (3, 5), (3, 5)]
 		)
 
 
