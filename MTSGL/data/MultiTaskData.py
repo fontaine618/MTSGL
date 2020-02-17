@@ -16,16 +16,6 @@ class MultiTaskData(Data):
 			x_cols: Optional[Sequence[str]] = None,
 			standardize: bool = True
 	):
-		# --------------------------------------------------------------------------------------------------------------
-		print("="*40)
-		print(df)
-		print(y_col)
-		print(task_col)
-		print(w_col)
-		print(x_cols)
-		print(standardize)
-		# --------------------------------------------------------------------------------------------------------------
-
 		super().__init__()
 		self.__name__ = "MultiTaskData"
 		#  tasks
@@ -62,12 +52,6 @@ class MultiTaskData(Data):
 				self.x[task] = (df_task[x_cols] - self.x_mean.loc[task]) / st_dev.where(st_dev > 1.0e-16, 1.0)
 			else:
 				self.x[task] = df_task[x_cols]
-		# --------------------------------------------------------------------------------------------------------------
-		print(self.__name__)
-		for attr in dir(self):
-			if not attr[0] == "_":
-				print(" -  %s = %r" % (attr, getattr(self, attr)))
-		# --------------------------------------------------------------------------------------------------------------
 
 	def _check_data(self):
 		super()._check_data()

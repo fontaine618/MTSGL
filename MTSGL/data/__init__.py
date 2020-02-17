@@ -1,4 +1,3 @@
-from .dataold import *
 from .utils import *
 from .Data import *
 from .MultivariateData import *

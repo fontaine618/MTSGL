@@ -16,15 +16,6 @@ class MultivariateData(Data):
 			standardize: bool = True
 	):
 		#  TODO put in docs that we disregard task_col
-		# --------------------------------------------------------------------------------------------------------------
-		print("="*40)
-		print(df)
-		print(y_cols)
-		print(w_cols)
-		print(x_cols)
-		print(standardize)
-		# --------------------------------------------------------------------------------------------------------------
-
 		super().__init__()
 		self.__name__ = "MultivariateData"
 		#  tasks
@@ -49,12 +40,6 @@ class MultivariateData(Data):
 		self.x_std_dev = self.x.std()
 		if standardize:
 			self.x = (self.x - self.x_mean) / self.x_std_dev.where(self.x_std_dev > 1.0e-16, 1.0)
-		# --------------------------------------------------------------------------------------------------------------
-		print(self.__name__)
-		for attr in dir(self):
-			if not attr[0] == "_":
-				print(" -  %s = %r" % (attr, getattr(self, attr)))
-		# --------------------------------------------------------------------------------------------------------------
 
 	def _check_data(self):
 		super()._check_data()
