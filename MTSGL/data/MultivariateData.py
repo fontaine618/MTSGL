@@ -35,6 +35,7 @@ class MultivariateData(Data):
 		if any([s <= 0 for s in self.w.sum()]):
 			raise ValueError("weights should have positive sum")
 		self.w = self.w / self.w.sum()
+		self.w.columns = self.tasks if self.w.shape[1] > 1 else ["w"]
 		#  standardize x and w
 		self.x_mean = self.x.mean()
 		self.x_std_dev = self.x.std()
@@ -48,10 +49,13 @@ class MultivariateData(Data):
 		super()._check_features()
 
 	def get_x(self, task):
-		pass
+		return self.x
 
 	def get_y(self, task):
-		pass
+		return self.y[task]
 
 	def get_w(self, task):
-		pass
+		if self.w.shape[1] > 1:
+			return self.w[task]
+		else:
+			return self.w
