@@ -30,8 +30,8 @@ class MultiTaskData(Data):
 		self.y = {}
 		self.w = {}
 		self.x = {}
-		self.x_mean = pd.DataFrame(columns=self.feature_names)
-		self.x_std_dev = pd.DataFrame(columns=self.feature_names)
+		self.x_mean = pd.DataFrame()
+		self.x_std_dev = pd.DataFrame()
 		for task in self.tasks:
 			df_task = df[df[task_col] == task]
 			self.n_obs[task] = df_task.shape[0]
@@ -45,11 +45,11 @@ class MultiTaskData(Data):
 				raise ValueError("weights should have positive sum")
 			self.w[task] = df_task[w_col] / ws
 			#  features
-			self.x_mean.loc[task] = df_task[x_cols].mean()
+			self.x_mean[task] = df_task[x_cols].mean()
 			st_dev = df_task[x_cols].std()
-			self.x_std_dev.loc[task] = st_dev
+			self.x_std_dev[task] = st_dev
 			if standardize:
-				self.x[task] = (df_task[x_cols] - self.x_mean.loc[task]) / st_dev.where(st_dev > 1.0e-16, 1.0)
+				self.x[task] = (df_task[x_cols] - self.x_mean[task]) / st_dev.where(st_dev > 1.0e-16, 1.0)
 			else:
 				self.x[task] = df_task[x_cols]
 
