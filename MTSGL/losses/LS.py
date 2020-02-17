@@ -2,6 +2,7 @@ import numpy as np
 import MTSGL.solvers
 from .Loss import Loss
 
+
 class LS(Loss):
 	def __init__(self, x: np.ndarray, y: np.ndarray):
 		super().__init__(x, y)
@@ -24,10 +25,10 @@ class LS(Loss):
 		mat = np.matmul(self.x.transpose(), self.x) / self.n + np.eye(self.p) / tau
 		return np.linalg.solve(mat, np.matmul(self.x.transpose(), self.y) / self.n + v / tau)
 
-	def ridge(self, tau: float, v: np.ndarray, **kwargs):
+	def ridge(self, tau: float, v: np.ndarray, x0: np.ndarray, **kwargs):
 		return MTSGL.solvers.ridge(
 			loss=self,
-			x0=np.zeros((self.p, 1)),
+			x0=x0,
 			v=v,
 			tau=tau,
 			**kwargs
