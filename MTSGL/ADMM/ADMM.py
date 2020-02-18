@@ -18,24 +18,10 @@ class ADMM:
 		self.data = data
 		self.losses = losses
 		self.reg = reg
-		self.beta0 = None
 		self.threshold = None
 		self.max_iter = None
 		self._set_options(**kwargs)
 		self._set_lambda(**kwargs)
-
-	def set_beta0(self, beta0):
-		if beta0 is None:
-			self.beta0 = np.zeros((self.data.n_features, self.data.n_tasks))
-		else:
-			if not isinstance(beta0, np.adrray):
-				raise TypeError("beta0 should be a numpy array")
-			if not beta0.shape == (self.data.n_features, self.data.n_tasks):
-				raise ValueError(
-					"beta0 should be of dimension (p,K): expected ({}, {}), received ({}, {})"
-					.format(self.data.n_features, self.data.n_tasks, *beta0.shape)
-				)
-			self.beta0 = beta0
 
 	def _set_options(self, **kwargs):
 		if "threshold" not in kwargs.keys():
@@ -50,10 +36,6 @@ class ADMM:
 			self.max_iter = int(kwargs["max_iter"])
 			if not (1 <= self.max_iter <= 100_000):
 				raise ValueError("max_iter must be between 1 and 100,000")
-		if "beta0" in kwargs:
-			self.set_beta0(kwargs["beta0"])
-		else:
-			self.set_beta0(None)
 		self._set_additional_options(**kwargs)
 
 	def _set_additional_options(self, **kwargs):
