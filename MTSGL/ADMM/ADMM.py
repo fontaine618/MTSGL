@@ -6,10 +6,11 @@ from MTSGL.regularizations import Regularization
 
 
 class ADMM:
+	# I think this class could be expanded to more general fits than just ADMM.
 
 	def __init__(
 			self,
-			data: Data,
+			data: Data, # I think we can drop this and keep it in the fit class to be implemented above that
 			losses: Dict[str, Loss],
 			reg: Regularization,
 			**kwargs
@@ -53,9 +54,9 @@ class ADMM:
 			self.set_beta0(kwargs["beta0"])
 		else:
 			self.set_beta0(None)
-		self.set_additional_options(**kwargs)
+		self._set_additional_options(**kwargs)
 
-	def set_additional_options(self, **kwargs):
+	def _set_additional_options(self, **kwargs):
 		pass
 
 	def _set_lambda(self, **kwargs):

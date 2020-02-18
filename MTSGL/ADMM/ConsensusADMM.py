@@ -16,7 +16,7 @@ class ConsensusADMM(ADMM):
 		self.threshold_ridge_decrease = None
 		super().__init__(data, losses, reg, **kwargs)
 
-	def set_additional_options(self, **kwargs):
+	def _set_additional_options(self, **kwargs):
 		if "threshold_ridge_decrease" not in kwargs.keys():
 			self.threshold_ridge_decrease = 1.0e-1
 		else:
