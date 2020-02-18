@@ -46,7 +46,7 @@ def df_to_data(
 			x_cols = sorted(list(df_cols - set(y_cols) - set(w_cols)))
 		cols = set(x_cols + y_cols + w_cols)
 		if len(cols) < len(x_cols) + len(y_cols) + len(w_cols):
-			raise ValueError("Some column indeces were repeated.")
+			raise ValueError("Some column indices were repeated.")
 		if len(cols - df_cols) > 0:
 			raise ValueError("Could not match columns {} to the columns of df".format(cols - df_cols))
 		#  instantiate
@@ -78,7 +78,7 @@ def df_to_data(
 		cols = set(x_cols)
 		cols.update([y_col, w_col, task_col])
 		if len(cols) < len(x_cols + [y_col, w_col, task_col]):
-			raise ValueError("Some column indeces were repeated.")
+			raise ValueError("Some column indices were repeated.")
 		if len(cols - df_cols) > 0:
 			raise ValueError("Could not match columns {} to the columns of df".format(cols - df_cols))
 		#  instantiate
