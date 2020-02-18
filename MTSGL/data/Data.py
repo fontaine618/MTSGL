@@ -9,9 +9,9 @@ class Data:
 	# https://rszalski.github.io/magicmethods/
 
 	def __init__(self, **kwargs):
-		self.x = None
-		self.y = None
-		self.w = None
+		self._x = None
+		self._y = None
+		self._w = None
 		self.tasks = None
 		self.n_tasks = None
 		self.n_obs = None
@@ -20,24 +20,31 @@ class Data:
 		self.x_mean = None
 		self.x_std_dev = None
 
-	def _check_data(self):
-		pass
-
-	def _check_features(self):
-		pass
-
 	def _summarize(self):
-		out = ""
+		out = self.__name__ + "\n"
+		out += "-" * len(self.__name__) + "\n"
+		out += self._summarize_tasks()
+		out += "Features (p={}): \n".format(self.n_features)
+		for i, feature in enumerate(self.feature_names):
+			if i < 10 or i >= self.n_features - 10:
+				out += "    {}\n".format(feature)
+			elif i == 10:
+				out += "    ...\n"
+			else:
+				pass
 		return out
+
+	def _summarize_tasks(self):
+		pass
 
 	def __str__(self):
 		return self._summarize()
 
-	def get_x(self, task):
+	def x(self, task):
 		pass
 
-	def get_y(self, task):
+	def y(self, task):
 		pass
 
-	def get_w(self, task):
+	def w(self, task):
 		pass

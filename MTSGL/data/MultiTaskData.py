@@ -27,43 +27,50 @@ class MultiTaskData(Data):
 		self.feature_names = x_cols
 		#  data into dicts
 		self.n_obs = {}
-		self.y = {}
-		self.w = {}
-		self.x = {}
+		self._y = {}
+		self._w = {}
+		self._x = {}
 		self.x_mean = pd.DataFrame()
 		self.x_std_dev = pd.DataFrame()
+		ws_total = 0.0
 		for task in self.tasks:
 			df_task = df[df[task_col] == task]
 			self.n_obs[task] = df_task.shape[0]
 			#  responses
-			self.y[task] = df_task[y_col]
+			self._y[task] = df_task[y_col]
 			#  weights
 			if df_task[w_col].min() < 0.0:
 				raise ValueError("weights should be non-negative")
 			ws = df_task[w_col].sum()
+			ws_total += ws
 			if ws <= 0.0:
 				raise ValueError("weights should have positive sum")
-			self.w[task] = df_task[w_col] / ws
+			self._w[task] = df_task[w_col]
 			#  features
 			self.x_mean[task] = df_task[x_cols].mean()
 			st_dev = df_task[x_cols].std()
 			self.x_std_dev[task] = st_dev
 			if standardize:
-				self.x[task] = (df_task[x_cols] - self.x_mean[task]) / st_dev.where(st_dev > 1.0e-16, 1.0)
+				self._x[task] = (df_task[x_cols] - self.x_mean[task]) / st_dev.where(st_dev > 1.0e-16, 1.0)
 			else:
-				self.x[task] = df_task[x_cols]
+				self._x[task] = df_task[x_cols]
+		for task in self.tasks:
+			self._w[task] = self._w[task] / ws_total
 
-	def _check_data(self):
-		super()._check_data()
+	def _summarize_tasks(self):
+		out = "Tasks (n={}): \n".format(sum(self.n_obs.values()))
+		for task in self.tasks:
+			out += "    {} (n={})\n".format(task, self.n_obs[task])
+		return out
 
-	def _check_features(self):
-		super()._check_features()
+	def x(self, task):
+		return self._x[task]
 
-	def get_x(self, task):
-		return self.x[task]
+	def n(self, task):
+		return self.n_obs[task]
 
-	def get_y(self, task):
-		return self.y[task]
+	def y(self, task):
+		return self._y[task]
 
-	def get_w(self, task):
-		return self.w[task]
+	def w(self, task):
+		return self._w[task]

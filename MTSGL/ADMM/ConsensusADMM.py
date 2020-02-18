@@ -9,13 +9,12 @@ class ConsensusADMM(ADMM):
 	def __init__(
 			self,
 			data: Data,
-			loss: Loss,
+			losses: Loss,
 			reg: Regularization,
-			lam: float,
 			**kwargs
 	):
 		self.threshold_ridge_decrease = None
-		super().__init__(data, loss, reg, lam, **kwargs)
+		super().__init__(data, losses, reg, **kwargs)
 
 	def set_additional_options(self, **kwargs):
 		if "threshold_ridge_decrease" not in kwargs.keys():

@@ -23,38 +23,41 @@ class MultivariateData(Data):
 		#  features
 		self.feature_names = x_cols
 		self.n_features = len(x_cols)
-		self.x = df[x_cols]
+		self._x = df[x_cols]
 		#  responses
-		self.y = df[y_cols]
+		self._y = df[y_cols]
 		self.n_obs = len(df)
 		#  weights
-		self.w = df[w_cols]
-		if self.w.min().min() < 0.0:
+		self._w = df[w_cols]
+		if self._w.min().min() < 0.0:
 			raise ValueError("weights should be non-negative")
-		if any([s <= 0 for s in self.w.sum()]):
+		if any([s <= 0 for s in self._w.sum()]):
 			raise ValueError("weights should have positive sum")
-		self.w = self.w / self.w.sum()
-		self.w.columns = self.tasks if self.w.shape[1] > 1 else ["w"]
+		self._w = self._w / self._w.sum()
+		self._w.columns = self.tasks if self._w.shape[1] > 1 else ["w"]
 		#  standardize x and w
-		self.x_mean = self.x.mean()
-		self.x_std_dev = self.x.std()
+		self.x_mean = self._x.mean()
+		self.x_std_dev = self._x.std()
 		if standardize:
-			self.x = (self.x - self.x_mean) / self.x_std_dev.where(self.x_std_dev > 1.0e-16, 1.0)
+			self._x = (self._x - self.x_mean) / self.x_std_dev.where(self.x_std_dev > 1.0e-16, 1.0)
 
-	def _check_data(self):
-		super()._check_data()
+	def _summarize_tasks(self):
+		out = "Tasks (n={}): \n".format(self.n_obs)
+		for task in self.tasks:
+			out += "    {}\n".format(task)
+		return out
 
-	def _check_features(self):
-		super()._check_features()
+	def x(self, task):
+		return self._x
 
-	def get_x(self, task):
-		return self.x
+	def n(self, task):
+		return self.n_obs
 
-	def get_y(self, task):
-		return self.y[task]
+	def y(self, task):
+		return self._y[task]
 
-	def get_w(self, task):
-		if self.w.shape[1] > 1:
-			return self.w[task]
+	def w(self, task):
+		if self._w.shape[1] > 1:
+			return self._w[task]
 		else:
-			return self.w
+			return self._w

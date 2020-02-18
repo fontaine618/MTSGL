@@ -23,4 +23,3 @@ class Loss:
 
 	def hessian_lower_bound(self):
 		pass
-

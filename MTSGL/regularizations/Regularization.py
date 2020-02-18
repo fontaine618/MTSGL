@@ -16,3 +16,6 @@ class Regularization:
 
 	def proximal(self, x: np.ndarray, tau: float) -> np.ndarray:
 		pass
+
+	def max_lam(self):
+		pass
