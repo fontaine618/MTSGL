@@ -15,9 +15,8 @@ class ADMM:
 			**kwargs
 	) -> None:
 		self.data = data
-		self.loss = losses
+		self.losses = losses
 		self.reg = reg
-
 		self.beta0 = None
 		self.threshold = None
 		self.max_iter = None
@@ -73,4 +72,4 @@ class ADMM:
 		self.lam = (l for l in lam)
 
 	def _find_max_lam(self):
-		return self.reg.max_lam(self.loss)
+		return self.reg.max_lam(self.losses)
