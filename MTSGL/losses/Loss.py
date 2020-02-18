@@ -4,10 +4,8 @@ import MTSGL.solvers
 
 class Loss:
 	def __init__(self, x: np.ndarray, y: np.ndarray):
-		self.__type = None
 		self.x = x
 		self.y = y
-		self.__type = ""
 
 	def lin_predictor(self, beta):
 		return np.matmul(self.x, beta)

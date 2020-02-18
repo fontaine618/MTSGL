@@ -1,7 +1,7 @@
 import numpy as np
 from typing import Union, List, Dict
 from MTSGL.data.Data import Data
-from MTSGL.losses import Loss
+from MTSGL.losses import Loss, MTLoss
 from MTSGL.regularizations import Regularization
 
 
@@ -11,12 +11,12 @@ class ADMM:
 	def __init__(
 			self,
 			data: Data, # I think we can drop this and keep it in the fit class to be implemented above that
-			losses: Dict[str, Loss],
+			loss: MTLoss,
 			reg: Regularization,
 			**kwargs
 	) -> None:
 		self.data = data
-		self.losses = losses
+		self.loss = loss
 		self.reg = reg
 		self.threshold = None
 		self.max_iter = None
@@ -55,4 +55,4 @@ class ADMM:
 		self.lam = (l for l in lam)
 
 	def _find_max_lam(self):
-		return self.reg.max_lam(self.losses)
+		return self.reg.max_lam(self.loss)

@@ -3,7 +3,7 @@ from typing import Union, Optional, List, Dict
 import numpy as np
 import pandas as pd
 import MTSGL.proximal
-from MTSGL.losses import Loss
+from MTSGL.losses import Loss, MTLoss
 
 
 class SparseGroupLasso(Regularization):
@@ -59,12 +59,10 @@ class SparseGroupLasso(Regularization):
 			x
 		)
 
-	def max_lam(self, losses: Dict[str, Loss]) -> float:
-		grad0 = pd.DataFrame(columns=losses.keys())
-		for task, loss in losses.items():
-			grad = loss.gradient(np.zeros((loss.p, 1))).reshape(-1)
-			grad0[task] = grad
-		grad0 = grad0.to_numpy()
+	def max_lam(self, loss: MTLoss) -> float:
+		# TODO check calculations, this seems to be only for GroupLasso(q)
+		# see "A note on the group lasso and a sparse group lasso", section 3.
+		grad0 = loss.gradient()
 		norms = np.apply_along_axis(np.linalg.norm, 1, grad0, self.q_dual)
 		return max(norms / self.weights)
 
