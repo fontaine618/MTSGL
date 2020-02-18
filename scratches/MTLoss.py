@@ -24,8 +24,7 @@ data = MTSGL.data.utils.df_to_data(
 loss = MTSGL.losses.MTWLS(data)
 
 loss.gradient(task="0")
-
-loss["0"]
+loss.gradient()
 
 print(loss.loss())
 for task in tasks:
