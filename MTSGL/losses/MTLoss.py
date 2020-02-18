@@ -3,6 +3,8 @@ import pandas as pd
 from MTSGL.losses import Loss
 import MTSGL.losses
 from MTSGL.data.Data import Data
+from MTSGL.data.MultiTaskData import MultiTaskData
+from MTSGL.data.MultivariateData import MultivariateData
 from typing import Optional
 
 
@@ -17,10 +19,6 @@ class MTLoss:
 	def gradient(self, beta: np.ndarray, task: Optional[str]):
 		pass
 
-	def _lin_predictor(self, beta: np.ndarray):
-		# if else MVT of MT
-		pass
-
 
 class SeparableMTLoss(MTLoss):
 
@@ -31,6 +29,21 @@ class SeparableMTLoss(MTLoss):
 	def __getitem__(self, task):
 		return self._losses[task]
 
+	def __repr__(self):
+		return repr(self._losses)
+
+	def has_key(self, task):
+		return task in self._losses
+
+	def keys(self):
+		return self._losses.keys()
+
+	def values(self):
+		return self._losses.values()
+
+	def items(self):
+		return self._losses.items()
+
 	def __setitem__(self, task: str, loss: Loss):
 		self._losses[task] = loss
 
@@ -40,13 +53,14 @@ class SeparableMTLoss(MTLoss):
 	def __len__(self):
 		return len(self._losses)
 
+	def __contains__(self, task):
+		return task in self._losses
+
 	def gradient(self, beta: Optional[np.ndarray] = None, task: Optional[str] = None):
 		if task is None:
 			if beta is None:
 				beta = np.zeros((self.data.n_features, self.data.n_tasks))
-			grad = np.zeros((self.data.n_features, self.data.n_tasks))
-			for k, task in enumerate(self.data.tasks):
-				grad[:, [k]] = self[task].gradient(beta[:, [k]])
+			grad = np.column_stack([loss.gradient(beta[:, [k]]) for k, loss in enumerate(self.values())])
 			return grad
 		else:
 			if beta is None:
@@ -57,10 +71,7 @@ class SeparableMTLoss(MTLoss):
 		if task is None:
 			if beta is None:
 				beta = np.zeros((self.data.n_features, self.data.n_tasks))
-			loss_val = 0.0
-			for k, task in enumerate(self.data.tasks):
-				loss_val += self[task].loss(beta[:, k])
-			return loss_val
+			return sum([loss.loss(beta[:, k]) for k, loss in enumerate(self.values())])
 		else:
 			if beta is None:
 				beta = np.zeros((self.data.n_features, 1))

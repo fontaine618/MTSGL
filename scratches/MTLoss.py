@@ -30,3 +30,8 @@ print(loss.loss())
 for task in tasks:
 	print(loss.loss(task=task))
 sum([loss.loss(task=task) for task in tasks])
+
+print(data)
+
+for l in loss.items():
+	print(l)
