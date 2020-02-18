@@ -61,10 +61,10 @@ class MTWLS(SeparableMTLoss):
 	def loss(self, beta: Optional[np.ndarray] = None, task: Optional[str] = None):
 		if task is None:
 			if beta is None:
-				beta = np.zeros((self.data.n_features, 1))
+				beta = np.zeros((self.data.n_features, self.data.n_tasks))
 			loss_val = 0.0
-			for task, loss in self._losses.items():
-				loss_val += loss.loss(beta)
+			for k, task in enumerate(self.data.tasks):
+				loss_val += self[task].loss(beta[:, k])
 			return loss_val
 		else:
 			if beta is None:

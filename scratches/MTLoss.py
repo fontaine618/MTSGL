@@ -28,3 +28,6 @@ loss.gradient(task="0")
 loss["0"]
 
 print(loss.loss())
+for task in tasks:
+	print(loss.loss(task=task))
+sum([loss.loss(task=task) for task in tasks])
