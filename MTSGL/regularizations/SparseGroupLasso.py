@@ -10,7 +10,6 @@ class SparseGroupLasso(Regularization):
 
 	def __init__(
 			self,
-			p: int,
 			q: Union[str, int] = 2,
 			alpha: float = 0.5,
 			weights: Optional[List] = None
@@ -29,12 +28,9 @@ class SparseGroupLasso(Regularization):
 			raise ValueError("alpha must be between 0 and 1")
 		self.alpha = alpha
 		if weights is not None:
-			if len(weights) == p:
-				self.weights = np.array(weights)
-			else:
-				raise ValueError("weights should have length p={}, received {}".format(p, len(weights)))
+			self.weights = np.array(weights)
 		else:
-			self.weights = np.ones(p)
+			self.weights = np.ones(1)
 		self.name = "SparseGroupLasso"
 
 	def _str_parm(self) -> str:
@@ -77,10 +73,9 @@ class GroupLasso(SparseGroupLasso):
 
 	def __init__(
 			self,
-			p: int,
 			q: Union[str, int] = 2
 	):
-		super().__init__(p, q, 0.)
+		super().__init__(q, 0.)
 		self.name = "GroupLasso"
 
 	def _str_parm(self):
@@ -90,10 +85,9 @@ class GroupLasso(SparseGroupLasso):
 class Lasso(SparseGroupLasso):
 
 	def __init__(
-			self,
-			p: int
+			self
 	):
-		super().__init__(p, 2, 1.)
+		super().__init__(2, 1.)
 		self.name = "Lasso"
 
 	def _str_parm(self):

@@ -7,22 +7,15 @@ import MTSGL.proximal
 class TestSparseGroupLasso(unittest.TestCase):
 
 	def test_sparse_group_lasso(self):
-		reg = MTSGL.regularizations.SparseGroupLasso(5, 2, 0.5)
+		reg = MTSGL.regularizations.SparseGroupLasso(2, 0.5)
 		self.assertEqual(
 			reg.__str__,
 			"SparseGroupLasso(q = 2, alpha = 0.5)",
 			"Failed to create name for SparseGroupLasso"
 		)
 
-	def test_bad_weights(self):
-		self.assertRaises(
-			ValueError,
-			MTSGL.regularizations.SparseGroupLasso,
-			5, 2, 0.5, [1, 2, 3, 4]
-		)
-
 	def test_group_lasso(self):
-		reg = MTSGL.regularizations.GroupLasso(5, 'inf')
+		reg = MTSGL.regularizations.GroupLasso('inf')
 		self.assertEqual(
 			reg.__str__,
 			"GroupLasso(q = inf)",
@@ -30,7 +23,7 @@ class TestSparseGroupLasso(unittest.TestCase):
 		)
 
 	def test_lasso(self):
-		reg = MTSGL.regularizations.Lasso(5)
+		reg = MTSGL.regularizations.Lasso()
 		self.assertEqual(
 			reg.__str__,
 			"Lasso",
@@ -38,7 +31,7 @@ class TestSparseGroupLasso(unittest.TestCase):
 		)
 
 	def test_proximal(self):
-		reg = MTSGL.regularizations.SparseGroupLasso(5, 'inf', 0.5)
+		reg = MTSGL.regularizations.SparseGroupLasso('inf', 0.5)
 		x = np.arange(-2, 4).reshape(3, 2)
 		prox = reg.proximal(x, 1.)
 		sol = np.array([[-1.25, -0.5], [0., 0.5], [1.25, 2.]])
