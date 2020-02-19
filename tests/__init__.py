@@ -1,7 +1,7 @@
 """
 To run tests, simply run
 
-python3 -m unittest discover tests
+python3 -m unittest discover tests -v
 
 at the root of the directory.
 """

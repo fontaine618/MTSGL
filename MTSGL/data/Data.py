@@ -5,9 +5,6 @@ from typing import Union, Optional, Sequence
 
 class Data:
 
-	# TODO getters and setters for x, y, see __getitem__
-	# https://rszalski.github.io/magicmethods/
-
 	def __init__(self, **kwargs):
 		self._x = None
 		self._y = None

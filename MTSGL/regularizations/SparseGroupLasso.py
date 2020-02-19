@@ -60,11 +60,10 @@ class SparseGroupLasso(Regularization):
 		)
 
 	def max_lam(self, loss: MTLoss) -> float:
-		# TODO check calculations, this seems to be only for GroupLasso(q)
-		# see "A note on the group lasso and a sparse group lasso", section 3.
 		grad0 = loss.gradient()
 		norms = np.apply_along_axis(np.linalg.norm, 1, grad0, self.q_dual)
-		return max(norms / self.weights)
+		denum = self.alpha * np.power(loss.data.n_tasks, 1.0/self.q_dual) + (1-self.alpha)
+		return max(norms / self.weights) / denum
 
 
 class GroupLasso(SparseGroupLasso):

@@ -23,9 +23,9 @@ data = MTSGL.data.utils.df_to_data(
 
 loss = MTSGL.losses.MTWLS(data)
 
-reg = MTSGL.regularizations.SparseGroupLasso(q=2, alpha=0.5, weights=np.random.uniform(p))
+reg = MTSGL.regularizations.SparseGroupLasso(q=2, alpha=1.0, weights=np.random.uniform(p))
 
-model = MTSGL.fit.ConsensusADMM(data, loss, reg, n_lam=10, lam_frac=0.01)
+model = MTSGL.fit.ConsensusADMM(loss, reg, n_lam=10, lam_frac=0.01)
 
 for l in model.lam:
 	print(l)
