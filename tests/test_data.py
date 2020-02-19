@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import pandas as pd
-import MTSGL.data
+import MTSGL
 
 
 class TestDfToData(unittest.TestCase):
@@ -82,7 +82,6 @@ class TestDfToData(unittest.TestCase):
 			task_col="task",
 			x_cols=["var1", "var2", "var3"]
 		)
-		print(data)
 		self.assertEqual(data._w.shape, (10, 1))
 
 	def test_Multivariate_multi_w(self):
@@ -141,7 +140,6 @@ class TestDfToData(unittest.TestCase):
 			w_cols="w",
 			x_cols=["var"+str(i+1) for i in range(p)]
 		)
-		print(data)
 		self.assertEqual(data.n_obs, {"0": 4, "1": 3, "2": 3})
 
 	def test_MultiTask_no_x(self):

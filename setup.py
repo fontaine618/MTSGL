@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='MTSGL',
     version='0.0.1',
-    description='Multi-task sparse group Lasso using ADMM',
+    description='Multi-task sparse group Lasso using fit',
     license='MIT',
     packages=['MTSGL'],
     author='Simon Fontaine, Jinming Li and Yang Li',

@@ -14,11 +14,11 @@ class TestLoss(unittest.TestCase):
 		w = w / sum(w)
 		beta = np.random.normal(0, 1, (p, 1))
 		WLS = MTSGL.losses.WLS(x, y, w)
-		print(WLS.ridge_closed_form(1.0, beta))
-		print(WLS.ridge(1.0, beta, np.zeros((p, 1))))
+		WLS.ridge_closed_form(1.0, beta)
+		WLS.ridge(1.0, beta, np.zeros((p, 1)))
 		LS = MTSGL.losses.LS(x, y)
-		print(LS.ridge_closed_form(1.0, beta))
-		print(LS.ridge(1.0, beta, np.zeros((p, 1))))
+		LS.ridge_closed_form(1.0, beta)
+		LS.ridge(1.0, beta, np.zeros((p, 1)))
 
 
 if __name__ == '__main__':

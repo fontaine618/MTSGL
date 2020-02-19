@@ -5,17 +5,14 @@ from MTSGL.losses import Loss, MTLoss
 from MTSGL.regularizations import Regularization
 
 
-class ADMM:
-	# I think this class could be expanded to more general fits than just ADMM.
+class Fit:
 
 	def __init__(
 			self,
-			data: Data, # I think we can drop this and keep it in the fit class to be implemented above that
 			loss: MTLoss,
 			reg: Regularization,
 			**kwargs
 	) -> None:
-		self.data = data
 		self.loss = loss
 		self.reg = reg
 		self.threshold = None

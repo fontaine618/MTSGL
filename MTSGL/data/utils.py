@@ -1,7 +1,9 @@
 import pandas as pd
 from typing import Union, List, Optional
 
-from MTSGL.data import Data, MultivariateData, MultiTaskData
+from MTSGL.data.Data import Data
+from MTSGL.data.MultivariateData import MultivariateData
+from MTSGL.data.MultiTaskData import MultiTaskData
 
 
 def df_to_data(

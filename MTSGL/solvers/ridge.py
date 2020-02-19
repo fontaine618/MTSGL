@@ -106,5 +106,4 @@ def ridge(
 			raise RuntimeError("ridge ({}) did not converge in {} iterations".format(method, t))
 		if step < threshold:
 			break
-	print("ridge ({}) terminated in {} iterations".format(method, t))
 	return xt, t

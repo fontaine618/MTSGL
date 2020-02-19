@@ -1,20 +1,19 @@
 from MTSGL.data.Data import Data
 from MTSGL.losses import SeparableMTLoss
 from MTSGL.regularizations import Regularization
-from .ADMM import ADMM
+from .Fit import Fit
 
 
-class ConsensusADMM(ADMM):
+class ConsensusADMM(Fit):
 
 	def __init__(
 			self,
-			data: Data,
 			loss: SeparableMTLoss,
 			reg: Regularization,
 			**kwargs
 	):
 		self.threshold_ridge_decrease = None
-		super().__init__(data, loss, reg, **kwargs)
+		super().__init__(loss, reg, **kwargs)
 
 	def _set_additional_options(self, **kwargs):
 		if "threshold_ridge_decrease" not in kwargs.keys():
