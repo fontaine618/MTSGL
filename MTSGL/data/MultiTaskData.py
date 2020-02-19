@@ -14,7 +14,8 @@ class MultiTaskData(Data):
 			task_col: str,
 			w_col: Optional[str] = None,
 			x_cols: Optional[Sequence[str]] = None,
-			standardize: bool = True
+			standardize: bool = True,
+			intercept: bool = True
 	):
 		super().__init__()
 		self.__name__ = "MultiTaskData"
@@ -47,15 +48,22 @@ class MultiTaskData(Data):
 				raise ValueError("weights should have positive sum")
 			self._w[task] = df_task[w_col]
 			#  features
-			self.x_mean[task] = df_task[x_cols].mean()
-			st_dev = df_task[x_cols].std()
+			self._x[task] = df_task[x_cols]
+			if intercept:
+				self._x[task].insert(0, "(Intercept)", np.ones((self.n_obs[task], 1)))
+			self.x_mean[task] = self._x[task].mean()
+			if intercept:
+				self.x_mean[task]["(Intercept)"] = 0.0
+			st_dev = self._x[task].std()
+			st_dev = st_dev.where(st_dev > 1.0e-16, 1.0)
 			self.x_std_dev[task] = st_dev
 			if standardize:
-				self._x[task] = (df_task[x_cols] - self.x_mean[task]) / st_dev.where(st_dev > 1.0e-16, 1.0)
-			else:
-				self._x[task] = df_task[x_cols]
+				self._x[task] = (self._x[task] - self.x_mean[task]) / st_dev
 		for task in self.tasks:
 			self._w[task] = self._w[task] / ws_total
+		#  features
+		self.feature_names = self.x(self.tasks[0]).columns
+		self.n_features = len(self.feature_names)
 
 	def _summarize_tasks(self):
 		out = "Tasks (n={}): \n".format(sum(self.n_obs.values()))

@@ -82,6 +82,7 @@ class TestDfToData(unittest.TestCase):
 			task_col="task",
 			x_cols=["var1", "var2", "var3"]
 		)
+		data.x("y")
 		self.assertEqual(data._w.shape, (10, 1))
 
 	def test_Multivariate_multi_w(self):
@@ -119,7 +120,8 @@ class TestDfToData(unittest.TestCase):
 			df=df,
 			y_cols=["y1", "y2"],
 			task_col="task",
-			w_cols="w"
+			w_cols="w",
+			intercept=False
 		)
 		self.assertEqual(data._x.shape, (10, 6))
 
@@ -132,7 +134,7 @@ class TestDfToData(unittest.TestCase):
 			"task": [0, 1, 2, 0, 1, 2, 0, 1, 2, 0]
 		})
 		for i in range(p):
-			df["var" + str(i + 1)] = np.random.normal(i, i, n)
+			df["var" + str(i + 1)] = np.random.normal(i, i+1, n)
 		data = MTSGL.data.utils.df_to_data(
 			df=df,
 			y_cols="y",
@@ -140,6 +142,9 @@ class TestDfToData(unittest.TestCase):
 			w_cols="w",
 			x_cols=["var"+str(i+1) for i in range(p)]
 		)
+		data.x("0")
+		data.x_mean
+		data.x_std_dev
 		self.assertEqual(data.n_obs, {"0": 4, "1": 3, "2": 3})
 
 	def test_MultiTask_no_x(self):
@@ -156,7 +161,8 @@ class TestDfToData(unittest.TestCase):
 			df=df,
 			y_cols="y",
 			task_col="task",
-			w_cols="w"
+			w_cols="w",
+			intercept=False
 		)
 		self.assertEqual(
 			[data._x[task].shape for task in data.tasks],

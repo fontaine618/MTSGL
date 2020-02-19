@@ -12,7 +12,6 @@ def df_to_data(
 		task_col: Optional[str] = None,
 		w_cols: Optional[Union[str, List[str]]] = None,
 		x_cols: Optional[List[str]] = None,
-		standardize: bool = True,
 		**kwargs
 ) -> Data:
 	if isinstance(y_cols, str):
@@ -52,7 +51,7 @@ def df_to_data(
 		if len(cols - df_cols) > 0:
 			raise ValueError("Could not match columns {} to the columns of df".format(cols - df_cols))
 		#  instantiate
-		return MultivariateData(df, y_cols, w_cols, x_cols, standardize)
+		return MultivariateData(df, y_cols, w_cols, x_cols, **kwargs)
 	elif n_y == 1:
 		#  MultiTaskData case
 		y_col = y_cols[0]
@@ -84,7 +83,7 @@ def df_to_data(
 		if len(cols - df_cols) > 0:
 			raise ValueError("Could not match columns {} to the columns of df".format(cols - df_cols))
 		#  instantiate
-		return MultiTaskData(df, y_col, task_col, w_col, x_cols, standardize)
+		return MultiTaskData(df, y_col, task_col, w_col, x_cols, **kwargs)
 
 	else:
 		raise TypeError("y_cols must be a str or a non-empty list")

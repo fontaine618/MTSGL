@@ -13,20 +13,23 @@ class MultivariateData(Data):
 			y_cols: Union[str, Sequence[str]],
 			w_cols: Optional[Union[str, Sequence[str]]],
 			x_cols: Optional[Sequence[str]],
-			standardize: bool = True
+			standardize: bool = True,
+			intercept: bool = True
 	):
 		super().__init__()
 		self.__name__ = "MultivariateData"
 		#  tasks
 		self.tasks = y_cols
 		self.n_tasks = len(self.tasks)
-		#  features
-		self.feature_names = x_cols
-		self.n_features = len(x_cols)
-		self._x = df[x_cols]
 		#  responses
 		self._y = df[y_cols]
 		self.n_obs = len(df)
+		#  features
+		self._x = df[x_cols]
+		if intercept:
+			self._x.insert(0, "(Intercept)", np.ones((self.n_obs, 1)))
+		self.feature_names = self._x.columns
+		self.n_features = len(self.feature_names)
 		#  weights
 		self._w = df[w_cols]
 		if self._w.min().min() < 0.0:
@@ -37,9 +40,12 @@ class MultivariateData(Data):
 		self._w.columns = self.tasks if self._w.shape[1] > 1 else ["w"]
 		#  standardize x and w
 		self.x_mean = self._x.mean()
+		if intercept:
+			self.x_mean["(Intercept)"] = 0.0
 		self.x_std_dev = self._x.std()
+		self.x_std_dev = self.x_std_dev.where(self.x_std_dev > 1.0e-16, 1.0)
 		if standardize:
-			self._x = (self._x - self.x_mean) / self.x_std_dev.where(self.x_std_dev > 1.0e-16, 1.0)
+			self._x = (self._x - self.x_mean) / self.x_std_dev
 
 	def _summarize_tasks(self):
 		out = "Tasks (n={}): \n".format(self.n_obs)
@@ -50,7 +56,7 @@ class MultivariateData(Data):
 	def x(self, task):
 		return self._x
 
-	def n(self, task):
+	def n(self, task: Optional[str]):
 		return self.n_obs
 
 	def y(self, task):
