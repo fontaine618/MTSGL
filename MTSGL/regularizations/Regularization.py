@@ -1,6 +1,7 @@
 import numpy as np
 from MTSGL.losses.Loss import Loss
 
+
 class Regularization:
 
 	def __init__(self, **kwargs):

@@ -28,9 +28,9 @@ class SparseGroupLasso(Regularization):
 			raise ValueError("alpha must be between 0 and 1")
 		self.alpha = alpha
 		if weights is not None:
-			self.weights = np.array(weights)
+			self.weights = np.array(weights).reshape(-1)
 		else:
-			self.weights = np.ones(1)
+			self.weights = None
 		self.name = "SparseGroupLasso"
 
 	def _str_parm(self) -> str:
@@ -52,15 +52,21 @@ class SparseGroupLasso(Regularization):
 			The proximal value (p, K).
 
 		"""
-		# TODO use weights
-		return np.apply_along_axis(
-			lambda x_col: MTSGL.proximal.proximal_sgl(x_col, tau, self.q, self.alpha),
-			0,
-			x
-		)
+		p, K = x.shape
+		if self.weights is None:
+			w = np.ones(p)
+		else:
+			w = self.weights
+		return np.row_stack([
+			MTSGL.proximal.proximal_sgl(x[j, :], tau * w[j], self.q, self.alpha)
+			for j in range(p)
+		])
 
 	def max_lam(self, loss: MTLoss) -> float:
 		grad0 = loss.gradient()
+		p, K = grad0.shape
+		if self.weights is None:
+			self.weights = np.ones(p)
 		norms = np.apply_along_axis(np.linalg.norm, 1, grad0, self.q_dual)
 		denum = self.alpha * np.power(loss.data.n_tasks, 1.0/self.q_dual) + (1-self.alpha)
 		return max(norms / self.weights) / denum

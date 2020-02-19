@@ -14,6 +14,36 @@ def df_to_data(
 		x_cols: Optional[List[str]] = None,
 		**kwargs
 ) -> Data:
+	"""
+
+	Parameters
+	----------
+	df: pd.DataFrame
+		The data frame.
+	y_cols: str or list(str)
+		The name of the columns(s) containing the response(s).
+	task_col: str or None
+		The name of the column identifying the tasks. If None, we assume the tasks are given by y_cols.
+	w_cols: str or list(str) or None
+		The name of the column(s) containing the observation weights. If None, we assume equal weights
+		over all observations (1/n, n=sum(n_k)). Is list(str), it must match the length of y_cols.
+	x_cols: list(str) or None:
+		The name of the columns containing the features. If none, all remaining columns are selected.
+	kwargs
+		Further arguments to be passed to Data instantiation.
+
+	Returns
+	-------
+	data: Data
+		The Data object.
+
+	Notes
+	-----
+	If y_cols is a list of length above 1, then we are in the MultivariateData case and task_col is disregarded.
+	If y_cols is a string or a list of length 1, then we are in the MultiTaskData case and task_col defines the
+	tasks: if no task_col is provided then a single task is assumed.
+
+	"""
 	if isinstance(y_cols, str):
 		y_cols = [y_cols]
 	try:
@@ -21,7 +51,6 @@ def df_to_data(
 	except TypeError:
 		raise TypeError("y_cols must be a str or a non-empty list")
 	if n_y > 1:
-		#  TODO put in docs that we disregard task_col
 		#  MultivariateData case
 		if w_cols is not None:
 			if isinstance(w_cols, str):
@@ -56,8 +85,11 @@ def df_to_data(
 		#  MultiTaskData case
 		y_col = y_cols[0]
 		#  prepare task_col
-		if task_col is None:
-			raise ValueError("task_col must be specified if only one response is provided")
+		if task_col is None: #  single task
+			task_col = "task"
+			while task_col in df.columns:
+				task_col += "_"
+			df[task_col] = "0"
 		else:
 			if not isinstance(task_col, str):
 				raise TypeError("task_col must be a str")

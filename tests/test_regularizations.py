@@ -31,10 +31,23 @@ class TestSparseGroupLasso(unittest.TestCase):
 		)
 
 	def test_proximal(self):
+		reg = MTSGL.regularizations.SparseGroupLasso('inf', 0.5, [1., 2., 3.])
+		x = np.arange(-2, 4).reshape(3, 2)
+		prox = reg.proximal(x, 0.2)
+		sol = np.array([[-1.8, -0.9], [0., 0.6], [1.7, 2.4]])
+		try:
+			np.testing.assert_array_almost_equal(prox, sol)
+			res = True
+		except AssertionError as err:
+			res = False
+			print(err)
+		self.assertTrue(res, "Failed to produce the correct proximal.")
+
+	def test_proximal_no_weights(self):
 		reg = MTSGL.regularizations.SparseGroupLasso('inf', 0.5)
 		x = np.arange(-2, 4).reshape(3, 2)
-		prox = reg.proximal(x, 1.)
-		sol = np.array([[-1.25, -0.5], [0., 0.5], [1.25, 2.]])
+		prox = reg.proximal(x, 0.2)
+		sol = np.array([[-1.8, -0.9], [0., 0.8], [1.9, 2.8]])
 		try:
 			np.testing.assert_array_almost_equal(prox, sol)
 			res = True

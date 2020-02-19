@@ -10,7 +10,7 @@ def proximal_sgl(
 		alpha: float
 ):
 	"""
-	Proximal operator on the Lq norm.
+	Proximal operator on the L1+Lq penalty.
 
 	Parameters
 	----------

@@ -56,14 +56,13 @@ class TestDfToData(unittest.TestCase):
 		})
 		for i in range(p):
 			df["var" + str(i + 1)] = np.random.normal(0, 1, n)
-		self.assertRaises(
-			ValueError,
-			MTSGL.data.utils.df_to_data,
+		data = MTSGL.data.utils.df_to_data(
 			df=df,
 			y_cols=["y"],
 			w_cols="w",
 			x_cols=["var1", "var2", "var3"]
 		)
+		self.assertEqual(data.y("0").shape, (10, ))
 
 	def test_Multivariate_single_w(self):
 		n = 10
