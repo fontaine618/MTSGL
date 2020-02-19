@@ -11,7 +11,7 @@ class MultiTaskData(Data):
 	This class implements a Data class in the case of Multi-task data.
 
 	Attributes
-	---------
+	----------
 	tasks: list of str
 		The names of the tasks.
 	n_tasks: int

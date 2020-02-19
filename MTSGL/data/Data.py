@@ -9,7 +9,7 @@ class Data:
 	This class implements the basic attributes and methods for a dataset.
 
 	Attributes
-	---------
+	----------
 	tasks: list of str
 		The names of the tasks.
 	n_tasks: int
@@ -57,13 +57,7 @@ class Data:
 		self.x_std_dev = None
 
 	def _summarize(self):
-		"""Builds a string summarizing the dataset.
-
-		Returns
-		-------
-		out: str
-			The summary.
-		"""
+		"""Builds a string summarizing the dataset."""
 		out = self.__name__ + "\n"
 		out += "-" * len(self.__name__) + "\n"
 		out += self._summarize_tasks()

@@ -16,9 +16,6 @@ class TestLoss(unittest.TestCase):
 		WLS = MTSGL.losses.WLS(x, y, w)
 		WLS.ridge_closed_form(1.0, beta)
 		WLS.ridge(1.0, beta, np.zeros((p, 1)))
-		LS = MTSGL.losses.LS(x, y)
-		LS.ridge_closed_form(1.0, beta)
-		LS.ridge(1.0, beta, np.zeros((p, 1)))
 
 
 if __name__ == '__main__':
