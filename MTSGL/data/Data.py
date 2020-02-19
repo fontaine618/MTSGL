@@ -20,15 +20,15 @@ class Data:
 		The number of features.
 	feature_names: list of str
 		The names of the features.
-	x_mean: np.ndarray
+	x_mean: array-like
 		An array containing the mean of the features.
-	x_std_dev: np.ndarray
+	x_std_dev: array-like
 		An array containing the std. deviation of the features.
-	_x: np.ndarray or dict of np.ndarray
+	_x: array-like or dict of array-like
 		The features.
-	_y: np.ndarray or dict of np.ndarray
+	_y: array-like or dict of array-like
 		The responses.
-	_w : np.array or dict of np.ndarray
+	_w : array-like or dict of array-like
 		The observation weights.
 
 	Methods

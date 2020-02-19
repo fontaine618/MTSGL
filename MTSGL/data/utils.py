@@ -14,11 +14,14 @@ def df_to_data(
 		x_cols: Optional[List[str]] = None,
 		**kwargs
 ) -> Data:
-	"""
+	"""Transforms a data frame into a Data object.
+
+	Given a data frame and column indices for responses, tasks, weights and features, this function returns a Data
+	object of the appropriate type (MultiTaskData or MultivariateData).
 
 	Parameters
 	----------
-	df: pd.DataFrame
+	df: DataFrame
 		The data frame.
 	y_cols: str or list(str)
 		The name of the columns(s) containing the response(s).

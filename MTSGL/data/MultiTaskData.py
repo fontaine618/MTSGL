@@ -22,15 +22,15 @@ class MultiTaskData(Data):
 		The number of features.
 	feature_names: list of str
 		The names of the features.
-	x_mean: np.ndarray
+	x_mean: array-like
 		An 2D array containing the mean of the features.
-	x_std_dev: np.ndarray
+	x_std_dev: array-like
 		An 2D array containing the std. deviation of the features.
-	_x: dict of np.ndarray
+	_x: dict of array-like
 		The features.
-	_y: dict of np.ndarray
+	_y: dict of array-like
 		The responses.
-	_w : dict of np.ndarray
+	_w : dict of array-like
 		The observation weights.
 
 	Methods
@@ -63,7 +63,7 @@ class MultiTaskData(Data):
 
 		Parameters
 		----------
-		df: pd.DataFrame
+		df: DataFrame
 			The dataset.
 		y_col: str
 			The column of df that contains the responses.
