@@ -6,17 +6,79 @@ from MTSGL.data.Data import Data
 
 
 class MultiTaskData(Data):
+	"""Multi-task dataset.
+
+	This class implements a Data class in the case of Multi-task data.
+
+	Attributes
+	---------
+	tasks: list of str
+		The names of the tasks.
+	n_tasks: int
+		The number of tasks.
+	n_obs: dict of int
+		The number of observations.
+	n_features: int
+		The number of features.
+	feature_names: list of str
+		The names of the features.
+	x_mean: np.ndarray
+		An 2D array containing the mean of the features.
+	x_std_dev: np.ndarray
+		An 2D array containing the std. deviation of the features.
+	_x: dict of np.ndarray
+		The features.
+	_y: dict of np.ndarray
+		The responses.
+	_w : dict of np.ndarray
+		The observation weights.
+
+	Methods
+	-------
+	x(task)
+		Extracts the feature matrix in a given task.
+	y(task)
+		Extracts the vector of responses in a given task.
+	w(task)
+		Extracts the vector of weights in a given task.
+	n(task)
+		Extracts the number of observations in a given task.
+
+	Notes
+	-----
+	Since we may have different number of observations in each task, we have to store the data in dictionaries.
+	"""
 
 	def __init__(
 			self,
 			df: pd.DataFrame,
-			y_col: Union[str, Sequence[str]],
+			y_col: str,
 			task_col: str,
-			w_col: Optional[str] = None,
-			x_cols: Optional[Sequence[str]] = None,
+			w_col: str,
+			x_cols: Sequence[str],
 			standardize: bool = True,
 			intercept: bool = True
 	):
+		"""Initializes a MultiTaskData object.
+
+		Parameters
+		----------
+		df: pd.DataFrame
+			The dataset.
+		y_col: str
+			The column of df that contains the responses.
+		task_col: str
+			The column of df that contains the task identifiers.
+		w_col: str
+			The column of df that contains the observation weights.
+		x_cols: list of str
+			The columns of df that contains the features.
+		standardize: bool, optional
+			True to standardize the features. Defaults to True.
+		intercept: bool, optional
+			True to include in intercept denoted '(Intercept)'. Note that it will overwrite any column with name
+			'(Intercept)' in df. Defaults to True.
+		"""
 		super().__init__()
 		self.__name__ = "MultiTaskData"
 		#  tasks

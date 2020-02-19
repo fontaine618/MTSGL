@@ -6,16 +6,78 @@ from MTSGL.data.Data import Data
 
 
 class MultivariateData(Data):
+	"""Multivariate dataset.
+
+	This class implements a Data class in the case of Multi-task data.
+
+	Attributes
+	---------
+	tasks: list of str
+		The names of the tasks.
+	n_tasks: int
+		The number of tasks.
+	n_obs: int
+		The number of observations.
+	n_features: int
+		The number of features.
+	feature_names: list of str
+		The names of the features.
+	x_mean: np.ndarray
+		An 1D array containing the mean of the features.
+	x_std_dev: np.ndarray
+		An 1D array containing the std. deviation of the features.
+	_x: np.ndarray
+		The features.
+	_y: np.ndarray
+		The responses.
+	_w : np.ndarray
+		The observation weights.
+
+	Methods
+	-------
+	x(task)
+		Extracts the feature matrix in a given task.
+	y(task)
+		Extracts the vector of responses in a given task.
+	w(task)
+		Extracts the vector of weights in a given task.
+	n(task)
+		Extracts the number of observations in a given task.
+
+	Notes
+	-----
+	Since we have the same number of observations in each task, we may use arrays to hold the data. The features
+	are shared across tasks so we do not copy it.
+
+	"""
 
 	def __init__(
 			self,
 			df: pd.DataFrame,
-			y_cols: Union[str, Sequence[str]],
-			w_cols: Optional[Union[str, Sequence[str]]],
-			x_cols: Optional[Sequence[str]],
+			y_cols: Sequence[str],
+			w_cols: Union[str, Sequence[str]],
+			x_cols: Sequence[str],
 			standardize: bool = True,
 			intercept: bool = True
 	):
+		"""Initializes a MultivariateData object.
+
+		Parameters
+		----------
+		df: pd.DataFrame
+			The dataset.
+		y_cols: list of str
+			The columns of df that contains the responses.
+		w_cols: str or list of str
+			The column(s) of df that contains the observation weights.
+		x_cols: list of str
+			The columns of df that contains the features.
+		standardize: bool, optional
+			True to standardize the features. Defaults to True.
+		intercept: bool, optional
+			True to include in intercept denoted '(Intercept)'. Note that it will overwrite any column with name
+			'(Intercept)' in df. Defaults to True.
+		"""
 		super().__init__()
 		self.__name__ = "MultivariateData"
 		#  tasks

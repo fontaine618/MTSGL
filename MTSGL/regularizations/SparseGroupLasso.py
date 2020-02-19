@@ -51,6 +51,11 @@ class SparseGroupLasso(Regularization):
 		prox : ndarray
 			The proximal value (p, K).
 
+		Notes
+		-----
+		The proximal operator is performed row-wise (fixed feature j=1..p)
+
+
 		"""
 		p, K = x.shape
 		if self.weights is None:
