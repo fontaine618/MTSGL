@@ -9,7 +9,7 @@ class TestSparseGroupLasso(unittest.TestCase):
 	def test_sparse_group_lasso(self):
 		reg = MTSGL.regularizations.SparseGroupLasso(2, 0.5)
 		self.assertEqual(
-			reg.__str__,
+			str(reg),
 			"SparseGroupLasso(q = 2, alpha = 0.5)",
 			"Failed to create name for SparseGroupLasso"
 		)
@@ -17,7 +17,7 @@ class TestSparseGroupLasso(unittest.TestCase):
 	def test_group_lasso(self):
 		reg = MTSGL.regularizations.GroupLasso('inf')
 		self.assertEqual(
-			reg.__str__,
+			str(reg),
 			"GroupLasso(q = inf)",
 			"Failed to create name for GroupLasso"
 		)
@@ -25,7 +25,7 @@ class TestSparseGroupLasso(unittest.TestCase):
 	def test_lasso(self):
 		reg = MTSGL.regularizations.Lasso()
 		self.assertEqual(
-			reg.__str__,
+			str(reg),
 			"Lasso",
 			"Failed to create name for Lasso"
 		)

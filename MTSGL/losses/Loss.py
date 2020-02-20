@@ -1,5 +1,6 @@
 import numpy as np
 import MTSGL.solvers
+from typing import Optional
 
 class Loss:
 	"""Abstract single-task loss.
@@ -47,7 +48,14 @@ class Loss:
 	def hessian_lower_bound(self, **kwargs):
 		pass
 
-	def ridge(self, tau: float, v: np.ndarray, x0: np.ndarray, **kwargs):
+	def ridge(
+			self,
+			tau: float,
+			v: np.ndarray,
+			x0: Optional[np.ndarray] = None,
+			**kwargs):
+		if x0 is None:
+			x0 = np.zeros_like(v)
 		return MTSGL.solvers.ridge(
 			loss=self,
 			x0=x0,

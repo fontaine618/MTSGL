@@ -117,9 +117,10 @@ class GroupLasso(SparseGroupLasso):
 
 	def __init__(
 			self,
-			q: Union[str, int] = 2
+			q: Union[str, int] = 2,
+			**kwargs
 	):
-		super().__init__(q, 0.)
+		super().__init__(q, 0., **kwargs)
 		self.name = "GroupLasso"
 
 	def _str_parm(self):
@@ -130,9 +131,10 @@ class Lasso(SparseGroupLasso):
 	"""Lasso regularization for Multi-task problems."""
 
 	def __init__(
-			self
+			self,
+			**kwargs
 	):
-		super().__init__(2, 1.)
+		super().__init__(2, 1., **kwargs)
 		self.name = "Lasso"
 
 	def _str_parm(self):

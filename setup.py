@@ -8,6 +8,6 @@ setup(
     packages=['MTSGL'],
     author='Simon Fontaine, Jinming Li and Yang Li',
     author_email='simfont@umich.edu, lijinmin@umich.edu, yangly@umich.edu',
-    keywords=['example'],
+    keywords=['TBD'],
     url='https://github.com/fontaine618/MTSGL'
 )

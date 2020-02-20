@@ -22,8 +22,11 @@ class Regularization:
 	def _str_parm(self):
 		return None
 
-	@property
 	def __str__(self):
+		str_parm = self._str_parm()
+		return self.name + ("({})".format(str_parm) if str_parm is not None else "")
+
+	def __repr__(self):
 		str_parm = self._str_parm()
 		return self.name + ("({})".format(str_parm) if str_parm is not None else "")
 
