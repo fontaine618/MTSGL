@@ -1,5 +1,5 @@
 MTSGL
------
+=====
 
 Multi-task regression with sparse groupe regularization using a proximal ADMM. This Python module was created as part of
 a class project for STATS 606 at the University of Michigan during the winter 2020 term by Simon Fontaine, Jinming Li
