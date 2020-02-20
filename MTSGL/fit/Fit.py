@@ -68,7 +68,8 @@ class Fit:
 	def _solution_path(self):
 		self.log = pd.DataFrame(columns=["l", "lambda", "size", "status"])
 		beta = np.zeros((self.n_lam, self.loss.data.n_features, self.loss.data.n_tasks))
-		b = beta[0, :, :]
+		beta[:] = np.nan
+		b = np.zeros((self.loss.data.n_features, self.loss.data.n_tasks))
 		for l, lam in enumerate(self.lam):
 			p = 0
 			try:
@@ -101,6 +102,7 @@ class Fit:
 				pass
 		if self.verbose:
 			print(self.log)
+			print(beta)
 		return beta
 
 	def _solve(self, beta0: np.ndarray, lam: float, **kwargs):
@@ -108,25 +110,26 @@ class Fit:
 
 		Parameters
 		----------
-		beta0 :
-		lam :
-		kwargs :
+		beta0 : array-like
+			The initial parameter value. (p, K)
+		lam : float
+			The regularization parameter.
 
 		Returns
 		-------
+		beta : array-like
+			The final estimate. (p, K)
 
 		Raises
 		------
 		ConvergenceError
 			If the solver does not reach appropriate convergence.
-		NullModelError
-			If the solvers return an empty model. Signals that we have to decrease lambda.
 		"""
 		pass
 
 
 class ConvergenceError(Exception):
-	"""Raised when convergence criterion was not met."""
+	"""Raised when convergence criteria are not met."""
 
 	def __init__(self, value):
 		self.value = "ConvergenceError: " + str(value) + "\nTry increasing the threshold or the number of iterations."
