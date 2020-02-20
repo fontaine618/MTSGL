@@ -1,7 +1,5 @@
 import numpy as np
-from typing import Union, List, Dict
-from MTSGL.data.Data import Data
-from MTSGL.losses import Loss, MTLoss
+from MTSGL.losses import MTLoss
 from MTSGL.regularizations import Regularization
 
 
@@ -39,9 +37,12 @@ class Fit:
 		pass
 
 	def _set_lambda(self, **kwargs):
+		self.lam_decrease = None
+		self.n_lam = None
 		if "user_lam" in kwargs:
 			#   user-defined sequence (most likely from CV)
-			lam = kwargs["user_lam"]
+			lam = sorted(kwargs["user_lam"], reverse=True)
+			self.n_lam = len(lam)
 		else:
 			#  log decrease, need to first find the largest
 			max_lam = self._find_max_lam()
@@ -49,7 +50,39 @@ class Fit:
 			lam_frac = 1.0e-3 if "lam_frac" not in kwargs else kwargs["lam_frac"]
 			lam_decrease = np.power(lam_frac, 1.0/(n_lam-1))
 			lam = max_lam * np.power(lam_decrease, range(n_lam))
-		self.lam = (l for l in lam)
+			self.lam_decrease = lam_decrease
+			self.n_lam = len(lam)
+		self.lam = np.array(lam)
 
 	def _find_max_lam(self):
 		return self.reg.max_lam(self.loss)
+
+	def _solution_path(self):
+		print("=============")
+		print("Solution path")
+		print("=============")
+		beta = np.zeros((self.n_lam, self.loss.data.n_features, self.loss.data.n_tasks))
+		l = 0
+		while True:
+			beta0 = beta[l, :, :]
+			lam = self.lam[l]
+			print("l = {:<3}     lambda = {:0.6f}".format(l, lam))
+			print(beta0)
+			try:
+				self._solve(beta0, lam)
+			except RuntimeError as error:
+				print("Solution path stopped after {}-th lambda value :".format(l))
+				print(error)
+			else:
+				pass
+			finally:
+				pass
+			if l >= self.n_lam - 1:
+				break
+			l += 1
+			beta[l, :, :] = beta0 + 1.
+		pass
+
+	def _solve(self, beta0: np.ndarray, lam: float, **kwargs):
+		if lam < 0.05:
+			raise RuntimeError("Good error handling!")

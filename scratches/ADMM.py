@@ -25,7 +25,4 @@ loss = MTSGL.losses.MTWLS(data)
 
 reg = MTSGL.regularizations.SparseGroupLasso(q=2, alpha=1.0, weights=np.random.uniform(p))
 
-model = MTSGL.fit.ConsensusADMM(loss, reg, n_lam=10, lam_frac=0.01)
-
-for l in model.lam:
-	print(l)
+model = MTSGL.fit.ConsensusADMM(loss, reg, n_lam=5, lam_frac=0.01)
