@@ -7,7 +7,7 @@ and Yang Li.
 We consider the following optimization problem
 
 \[
-    \\text{minimize}_\beta
+    \text{minimize}_\beta
     \sum_{k=1}^K L(Y^{(k)},X^{(k)}\beta^{(k)})
     + \lambda P_{q,\alpha}(\beta),
 \]
