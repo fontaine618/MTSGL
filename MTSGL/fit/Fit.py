@@ -66,16 +66,13 @@ class Fit:
 		return self.reg.max_lam(self.loss)
 
 	def _solution_path(self):
-		self.log = pd.DataFrame(columns=["l", "lambda", "size", "status"])
+		self.log = pd.DataFrame(columns=["l", "lambda", "size", "status", "nb. iter"])
 		beta = np.zeros((self.n_lam, self.loss.data.n_features, self.loss.data.n_tasks))
 		beta[:] = np.nan
 		b = np.zeros((self.loss.data.n_features, self.loss.data.n_tasks))
 		for l, lam in enumerate(self.lam):
-			p = 0
 			try:
-				b = self._solve(b, lam) + np.random.choice(
-					[0, 1], (self.loss.data.n_features, self.loss.data.n_tasks), p=[0.9, 0.1]
-				)
+				b, nb_iter = self._solve(b, lam)
 			except ConvergenceError as error:
 				self.log = self.log.append(
 					pd.DataFrame({"l": [l], "lambda": [lam], "status": ["error"]}),
@@ -87,7 +84,7 @@ class Fit:
 			else:
 				p = sum(np.apply_along_axis(np.linalg.norm, 1, b, 1) > 0.0)
 				self.log = self.log.append(
-					pd.DataFrame({"l": [l], "lambda": [lam], "size": [p], "status": ["converged"]}),
+					pd.DataFrame({"l": [l], "lambda": [lam], "size": [p], "status": ["converged"], "nb. iter": [nb_iter]}),
 					ignore_index=True
 				)
 				beta[l, :, :] = b
@@ -101,8 +98,8 @@ class Fit:
 			finally:
 				pass
 		if self.verbose:
-			print(self.log)
 			print(beta)
+			print(self.log)
 		return beta
 
 	def _solve(self, beta0: np.ndarray, lam: float, **kwargs):
