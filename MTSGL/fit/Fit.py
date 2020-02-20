@@ -25,6 +25,7 @@ class Fit:
 			self.threshold = float(kwargs["threshold"])
 			if self.threshold < 1.0e-16:
 				raise ValueError("threshold must be above 1.0e-16")
+		self.verbose = True if "verbose" not in kwargs.keys() else bool(kwargs["verbose"])
 		if "max_iter" not in kwargs.keys():
 			self.max_iter = 1_000
 		else:
@@ -48,7 +49,7 @@ class Fit:
 			max_lam = self._find_max_lam()
 			n_lam = 100 if "n_lam" not in kwargs else kwargs["n_lam"]
 			lam_frac = 1.0e-3 if "lam_frac" not in kwargs else kwargs["lam_frac"]
-			lam_decrease = np.power(lam_frac, 1.0/(n_lam-1))
+			lam_decrease = np.power(lam_frac, 1.0 / (n_lam - 1))
 			lam = max_lam * np.power(lam_decrease, range(n_lam))
 			self.lam_decrease = lam_decrease
 			self.n_lam = len(lam)
@@ -58,31 +59,51 @@ class Fit:
 		return self.reg.max_lam(self.loss)
 
 	def _solution_path(self):
-		print("=============")
-		print("Solution path")
-		print("=============")
+		if self.verbose:
+			header = "| {:<5} | {:<10} | {:<10} | {:<10} |".format("l", "lambda", "size", "status")
+			print("=" * len(header))
+			print("Solution path\n")
+			print("-" * len(header))
+			print(header)
+			print("-" * len(header))
 		beta = np.zeros((self.n_lam, self.loss.data.n_features, self.loss.data.n_tasks))
 		l = 0
 		while True:
 			beta0 = beta[l, :, :]
 			lam = self.lam[l]
-			print("l = {:<3}     lambda = {:0.6f}".format(l, lam))
-			print(beta0)
+			p = 0
 			try:
 				self._solve(beta0, lam)
-			except RuntimeError as error:
-				print("Solution path stopped after {}-th lambda value :".format(l))
+			except ConvergenceError as error:
+				if self.verbose:
+					print("| {:<5} | {:<10.6f} | {:<10} | {:<10} |".format(l, lam, "-", "error"))
+					print("-" * len(header))
+				print("Solution path stopped after {} lambda values :".format(l))
 				print(error)
+				break
 			else:
-				pass
+				if self.verbose:
+					print("| {:<5} | {:<10.6f} | {:<10} | {:<10} |".format(l, lam, p, "converged"))
 			finally:
 				pass
 			if l >= self.n_lam - 1:
 				break
 			l += 1
 			beta[l, :, :] = beta0 + 1.
+		if self.verbose:
+			print("=" * len(header))
 		pass
 
 	def _solve(self, beta0: np.ndarray, lam: float, **kwargs):
-		if lam < 0.05:
-			raise RuntimeError("Good error handling!")
+		if lam < 0.005:
+			raise ConvergenceError("Good error handling!")
+
+
+class ConvergenceError(Exception):
+	"""Raised when convergence criterion was not met."""
+
+	def __init__(self, value):
+		self.value = "ConvergenceError: " + str(value)
+
+	def __str__(self):
+		return str(self.value)
