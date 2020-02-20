@@ -34,12 +34,14 @@ def proximal_sgl(
 
 	.. math::
 
-		prox_{	au \Vert\cdot\Vert_q}(v) = 	ext{argmin}_{x} 	au P_{q,lpha}(x)
-		+ rac{1}{2}\Vert x-v\Vert_2^2
+		prox_{ \Vert\cdot\Vert_q}(v) =
+		\\text{argmin}_{x} 	\\tau P_{q,\\alpha}(x)
+		+ \\frac {1}{2\\tau} \Vert x-v\Vert_2^2
 	where
+
 	.. math::
 
-		P_{q,lpha}(x) = (1-lpha)\Vert x\Vert_q + lpha \Vert x\Vert_1
+		P_{q,\\alpha}(x) = (1-\\alpha)\Vert x\Vert_q + \\alpha \Vert x\Vert_1
 	"""
 	if tau < 0:
 		raise ValueError("tau must be non-negative")
@@ -81,9 +83,13 @@ def _proximal_lq(
 	Notes
 	-----
 	Computes
+
 	.. math::
-		prox_{\tau \Vert\cdot\Vert_q}(v) = \text{argmin}_{x} \tau \Vert x\Vert_q
-		+ \frac{1}{2}\Vert x-v\Vert_2^2
+
+		prox_{\\tau \Vert\cdot\Vert_q}(v) =
+		\\text{argmin}_{x} \Vert x\Vert_q
+		+ \\frac{1}{2\\tau}\Vert x-v\Vert_2^2
+
 	"""
 	if q == 1:
 		return np.sign(x) * np.maximum(np.abs(x) - tau, 0.)
