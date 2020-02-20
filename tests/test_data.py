@@ -141,9 +141,6 @@ class TestDfToData(unittest.TestCase):
 			w_cols="w",
 			x_cols=["var"+str(i+1) for i in range(p)]
 		)
-		data.x("0")
-		data.x_mean
-		data.x_std_dev
 		self.assertEqual(data.n_obs, {"0": 4, "1": 3, "2": 3})
 
 	def test_MultiTask_no_x(self):

@@ -28,5 +28,6 @@ class TestSolvers(unittest.TestCase):
 			print(err)
 		self.assertTrue(res, "closed_form and ridge do not agree")
 
+
 if __name__ == '__main__':
 	unittest.main()
