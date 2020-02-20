@@ -60,10 +60,9 @@ class Fit:
 		return self.reg.max_lam(self.loss)
 
 	def _solution_path(self):
-		log = pd.DataFrame(columns=["lambda", "size", "status"])
+		log = pd.DataFrame(columns=["l", "lambda", "size", "status"])
 		beta = np.zeros((self.n_lam, self.loss.data.n_features, self.loss.data.n_tasks))
-		l = 0
-		while True:
+		for l in range(self.n_lam):
 			beta0 = beta[l, :, :]
 			lam = self.lam[l]
 			p = 0
@@ -71,6 +70,7 @@ class Fit:
 				self._solve(beta0, lam)
 			except ConvergenceError as error:
 				log = log.append(pd.DataFrame({
+					"l": [l],
 					"lambda": [lam],
 					"status": ["error"]
 				}), ignore_index=True)
@@ -79,29 +79,47 @@ class Fit:
 				break
 			else:
 				log = log.append(pd.DataFrame({
+					"l": [l],
 					"lambda": [lam],
 					"size": [p],
 					"status": ["converged"]
 				}), ignore_index=True)
 			finally:
-				pass
-			if l >= self.n_lam - 1:
-				break
-			l += 1
-			beta[l, :, :] = beta0 + 1.
+				if l >= self.n_lam - 1:
+					break
+				beta[l, :, :] = beta0 + 1.
 		if self.verbose:
 			print(log)
+			print(beta)
+		return beta
 
 	def _solve(self, beta0: np.ndarray, lam: float, **kwargs):
-		if lam < 0.005:
-			raise ConvergenceError("Good error handling!")
+		"""
+
+		Parameters
+		----------
+		beta0 :
+		lam :
+		kwargs :
+
+		Returns
+		-------
+
+		Raises
+		------
+		ConvergenceError
+			If the solver does not reach appropriate convergence.
+		NullModelError
+			If the solvers return an empty model. Signals that we have to decrease lambda.
+		"""
+		pass
 
 
 class ConvergenceError(Exception):
 	"""Raised when convergence criterion was not met."""
 
 	def __init__(self, value):
-		self.value = "ConvergenceError: " + str(value)
+		self.value = "ConvergenceError: " + str(value) + "\nTry increasing the threshold or the number of iterations."
 
 	def __str__(self):
 		return str(self.value)
