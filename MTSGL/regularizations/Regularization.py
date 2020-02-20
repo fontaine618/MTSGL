@@ -3,9 +3,21 @@ from MTSGL.losses.Loss import Loss
 
 
 class Regularization:
+	"""Regularization for Multi-task problems.
+
+	Attributes
+	----------
+
+	Methods
+	-------
+	proximal(x, tau)
+		Returns the proximal operator evaluated at x with multiplier tau.
+	max_lam(loss)
+		Returns the maximum regularization value such that all features are excluded for a given loss.
+	"""
 
 	def __init__(self, **kwargs):
-		self.name = "Regularization"
+		pass
 
 	def _str_parm(self):
 		return None

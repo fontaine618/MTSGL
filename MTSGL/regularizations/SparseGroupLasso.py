@@ -1,19 +1,47 @@
 from .Regularization import Regularization
-from typing import Union, Optional, List, Dict
+from typing import Union, Optional, List
 import numpy as np
-import pandas as pd
 import MTSGL.proximal
-from MTSGL.losses import Loss, MTLoss
+from MTSGL.losses import MTLoss
 
 
 class SparseGroupLasso(Regularization):
+	"""Sparse group Lasso regularization for Multi-task problems.
+
+	Attributes
+	----------
+	q: int or flaot or str
+		The group norm. Currently, only q=2 ou q='inf' are implemented.
+	alpha: float
+		The mixing of the L1 penalty and the Lq penalty: alpha=0 defines pure Lq penalty, alpha=1 defines Lasso penalty.
+
+	Methods
+	-------
+	proximal(x, tau)
+		Returns the proximal operator evaluated at x with multiplier tau.
+	max_lam(loss)
+		Returns the maximum regularization value such that all features are excluded for a given loss.
+	"""
 
 	def __init__(
 			self,
-			q: Union[str, int] = 2,
+			q: Union[str, int, float] = 2,
 			alpha: float = 0.5,
 			weights: Optional[List] = None
 	) -> None:
+		"""Initilization of a SparseGroupLasso object.
+
+		Produces an instance of Sparse group Lasso regularization.
+
+		Parameters
+		----------
+		q : int or float or str
+			The group norm. Currently, only q=2 ou q='inf' are implemented.
+		alpha : float
+			The mixing of the L1 penalty and the Lq penalty: alpha=0 defines pure Lq penalty, alpha=1 defines Lasso penalty.
+		weights : array-like
+			The weight for each feature.
+		"""
 		super().__init__()
 		if q not in ["inf", 2]:
 			raise NotImplementedError("q = {} not implemented yet".format(q))
@@ -37,7 +65,7 @@ class SparseGroupLasso(Regularization):
 		return "q = {}, alpha = {}".format(self.q, self.alpha)
 
 	def proximal(self, x: np.ndarray, tau: float) -> np.ndarray:
-		"""
+		"""Proximal operator of a Sparse group Lasso penalty.
 
 		Parameters
 		----------
@@ -68,6 +96,7 @@ class SparseGroupLasso(Regularization):
 		])
 
 	def max_lam(self, loss: MTLoss) -> float:
+		"""Returns the maximum regularization value such that all features are excluded for a given loss."""
 		grad0 = loss.gradient()
 		p, K = grad0.shape
 		if self.weights is None:
@@ -78,6 +107,13 @@ class SparseGroupLasso(Regularization):
 
 
 class GroupLasso(SparseGroupLasso):
+	"""Group Lasso regularization for Multi-task problems.
+
+	Attributes
+	----------
+	q: int or flaot or str
+		The group norm. Currently, only q=2 ou q='inf' are implemented.
+	"""
 
 	def __init__(
 			self,
@@ -91,6 +127,7 @@ class GroupLasso(SparseGroupLasso):
 
 
 class Lasso(SparseGroupLasso):
+	"""Lasso regularization for Multi-task problems."""
 
 	def __init__(
 			self
