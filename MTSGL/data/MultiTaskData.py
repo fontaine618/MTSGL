@@ -85,9 +85,6 @@ class MultiTaskData(Data):
 		df[task_col] = df[task_col].astype(str)
 		self.tasks = sorted(list(set(df[task_col])))
 		self.n_tasks = len(self.tasks)
-		#  features
-		self.n_features = len(x_cols)
-		self.feature_names = x_cols
 		#  data into dicts
 		self.n_obs = {}
 		self._y = {}

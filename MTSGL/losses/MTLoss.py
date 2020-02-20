@@ -1,14 +1,27 @@
 import numpy as np
-import pandas as pd
-from MTSGL.losses import Loss
-import MTSGL.losses
+from MTSGL.losses import Loss, WLS
 from MTSGL.data.Data import Data
-from MTSGL.data.MultiTaskData import MultiTaskData
-from MTSGL.data.MultivariateData import MultivariateData
 from typing import Optional
 
 
 class MTLoss:
+	"""Multi-task loss.
+
+	This class implements a loss function with multi-task structure.
+
+	Attributes
+	----------
+	data: Data
+		The data required to defined the loss.
+
+	Methods
+	-------
+	loss(beta)
+		Returns the loss function evaluated at beta.
+	gradient(beta)
+		Returns the gradient evaluated at beta.
+
+	"""
 
 	def __init__(self, data: Data, **kwargs):
 		self.data = data
@@ -21,6 +34,25 @@ class MTLoss:
 
 
 class SeparableMTLoss(MTLoss):
+	"""Multi-task separable loss.
+
+	This class implements a loss function with multi-task structure that is separable across tasks.
+
+	Attributes
+	----------
+	_losses: dict of Loss
+		The individual losses accessible as elements of a dictionary.
+	data: Data
+		The data required to defined the loss.
+
+	Methods
+	-------
+	loss(beta)
+		Returns the loss function evaluated at beta.
+	gradient(beta)
+		Returns the gradient evaluated at beta.
+
+	"""
 
 	def __init__(self, data: Data, **kwargs):
 		super().__init__(data, **kwargs)
@@ -79,11 +111,15 @@ class SeparableMTLoss(MTLoss):
 
 
 class MTWLS(SeparableMTLoss):
+	"""Multi-task Weighted Least Squares loss.
+
+	This class implements the multi-task weighted least squares loss.
+	"""
 
 	def __init__(self, data: Data):
 		super().__init__(data)
 		for task in self.data.tasks:
-			self[task] = MTSGL.losses.WLS(
+			self[task] = WLS(
 				self.data.x(task).to_numpy(),
 				self.data.y(task).to_numpy().reshape((-1, 1)),
 				self.data.w(task).to_numpy().reshape((-1, 1))
