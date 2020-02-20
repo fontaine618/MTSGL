@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 import MTSGL
 
-n = 100
-p = 5
+n = 300
+p = 50
 tasks = ["0", "1", "2"]
 df = pd.DataFrame(data={
 	"y": np.random.normal(0, 1, n),
@@ -25,4 +25,7 @@ loss = MTSGL.losses.MTWLS(data)
 
 reg = MTSGL.regularizations.SparseGroupLasso(q=2, alpha=1.0, weights=np.random.uniform(p))
 
-model = MTSGL.fit.ConsensusADMM(loss, reg, n_lam=5, lam_frac=0.01)
+model = MTSGL.fit.ConsensusADMM(loss, reg, n_lam=10, lam_frac=0.001)
+
+model.max_size
+

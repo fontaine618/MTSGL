@@ -33,6 +33,12 @@ class Fit:
 			self.max_iter = int(kwargs["max_iter"])
 			if not (1 <= self.max_iter <= 100_000):
 				raise ValueError("max_iter must be between 1 and 100,000")
+		if "max_size" not in kwargs.keys():
+			self.max_size = sum(self.loss.data.n_obs.values())
+		else:
+			self.max_size = int(kwargs["max_size"])
+			if not (1 <= self.max_size <= self.loss.data.n_features):
+				raise ValueError("max_iter must be between 1 and p={}".format(self.loss.data.n_features))
 		self._set_additional_options(**kwargs)
 
 	def _set_additional_options(self, **kwargs):
@@ -60,37 +66,41 @@ class Fit:
 		return self.reg.max_lam(self.loss)
 
 	def _solution_path(self):
-		log = pd.DataFrame(columns=["l", "lambda", "size", "status"])
+		self.log = pd.DataFrame(columns=["l", "lambda", "size", "status"])
 		beta = np.zeros((self.n_lam, self.loss.data.n_features, self.loss.data.n_tasks))
-		for l in range(self.n_lam):
-			beta0 = beta[l, :, :]
-			lam = self.lam[l]
+		b = beta[0, :, :]
+		for l, lam in enumerate(self.lam):
 			p = 0
 			try:
-				self._solve(beta0, lam)
+				b = self._solve(b, lam) + np.random.choice(
+					[0, 1], (self.loss.data.n_features, self.loss.data.n_tasks), p=[0.9, 0.1]
+				)
 			except ConvergenceError as error:
-				log = log.append(pd.DataFrame({
-					"l": [l],
-					"lambda": [lam],
-					"status": ["error"]
-				}), ignore_index=True)
+				self.log = self.log.append(
+					pd.DataFrame({"l": [l], "lambda": [lam], "status": ["error"]}),
+					ignore_index=True
+				)
 				print("Solution path stopped after {} lambda values :".format(l))
 				print(error)
 				break
 			else:
-				log = log.append(pd.DataFrame({
-					"l": [l],
-					"lambda": [lam],
-					"size": [p],
-					"status": ["converged"]
-				}), ignore_index=True)
-			finally:
-				if l >= self.n_lam - 1:
+				p = sum(np.apply_along_axis(np.linalg.norm, 1, b, 1) > 0.0)
+				self.log = self.log.append(
+					pd.DataFrame({"l": [l], "lambda": [lam], "size": [p], "status": ["converged"]}),
+					ignore_index=True
+				)
+				beta[l, :, :] = b
+				if p > self.max_size:
+					print(
+						"Solution path stopped after {} lambda values :\nMaximum model size reached ({}/{})."
+						.format(l, p, self.max_size)
+					)
+					self.log.at[l, "status"] = "max size"
 					break
-				beta[l, :, :] = beta0 + 1.
+			finally:
+				pass
 		if self.verbose:
-			print(log)
-			print(beta)
+			print(self.log)
 		return beta
 
 	def _solve(self, beta0: np.ndarray, lam: float, **kwargs):

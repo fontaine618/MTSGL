@@ -1,5 +1,5 @@
 import numpy as np
-from MTSGL.losses.Loss import Loss
+from MTSGL.losses.MTLoss import MTLoss
 
 
 class Regularization:
@@ -33,5 +33,5 @@ class Regularization:
 	def proximal(self, x: np.ndarray, tau: float) -> np.ndarray:
 		pass
 
-	def max_lam(self, loss: Loss) -> float:
+	def max_lam(self, loss: MTLoss) -> float:
 		pass
