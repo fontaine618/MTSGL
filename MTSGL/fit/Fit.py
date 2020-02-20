@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from MTSGL.losses import MTLoss
 from MTSGL.regularizations import Regularization
 
@@ -59,13 +60,7 @@ class Fit:
 		return self.reg.max_lam(self.loss)
 
 	def _solution_path(self):
-		if self.verbose:
-			header = "| {:<5} | {:<10} | {:<10} | {:<10} |".format("l", "lambda", "size", "status")
-			print("=" * len(header))
-			print("Solution path\n")
-			print("-" * len(header))
-			print(header)
-			print("-" * len(header))
+		log = pd.DataFrame(columns=["lambda", "size", "status"])
 		beta = np.zeros((self.n_lam, self.loss.data.n_features, self.loss.data.n_tasks))
 		l = 0
 		while True:
@@ -75,15 +70,19 @@ class Fit:
 			try:
 				self._solve(beta0, lam)
 			except ConvergenceError as error:
-				if self.verbose:
-					print("| {:<5} | {:<10.6f} | {:<10} | {:<10} |".format(l, lam, "-", "error"))
-					print("-" * len(header))
+				log = log.append(pd.DataFrame({
+					"lambda": [lam],
+					"status": ["error"]
+				}), ignore_index=True)
 				print("Solution path stopped after {} lambda values :".format(l))
 				print(error)
 				break
 			else:
-				if self.verbose:
-					print("| {:<5} | {:<10.6f} | {:<10} | {:<10} |".format(l, lam, p, "converged"))
+				log = log.append(pd.DataFrame({
+					"lambda": [lam],
+					"size": [p],
+					"status": ["converged"]
+				}), ignore_index=True)
 			finally:
 				pass
 			if l >= self.n_lam - 1:
@@ -91,8 +90,7 @@ class Fit:
 			l += 1
 			beta[l, :, :] = beta0 + 1.
 		if self.verbose:
-			print("=" * len(header))
-		pass
+			print(log)
 
 	def _solve(self, beta0: np.ndarray, lam: float, **kwargs):
 		if lam < 0.005:
