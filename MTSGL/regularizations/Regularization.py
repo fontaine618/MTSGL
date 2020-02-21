@@ -35,3 +35,6 @@ class Regularization:
 
 	def max_lam(self, loss: MTLoss) -> float:
 		pass
+
+	def value(self, beta: np.ndarray) -> float:
+		pass

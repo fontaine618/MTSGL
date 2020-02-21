@@ -56,6 +56,12 @@ class TestSparseGroupLasso(unittest.TestCase):
 			print(err)
 		self.assertTrue(res, "Failed to produce the correct proximal.")
 
+	def test_sgl_value(self):
+		reg = MTSGL.regularizations.SparseGroupLasso('inf', 0.5)
+		beta = np.array([0, 1, 2, 0, 1, 2]).reshape((3, 2))
+		value = reg.value(beta)
+		self.assertEqual(value, 5.5)
+
 
 if __name__ == '__main__':
 	unittest.main()

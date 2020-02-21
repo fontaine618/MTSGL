@@ -98,7 +98,6 @@ class Fit:
 			finally:
 				pass
 		if self.verbose:
-			print(beta)
 			print(self.log)
 		return beta
 

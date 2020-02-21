@@ -105,6 +105,18 @@ class SparseGroupLasso(Regularization):
 		denum = self.alpha * np.power(loss.data.n_tasks, 1.0/self.q_dual) + (1-self.alpha)
 		return max(norms / self.weights) / denum
 
+	def value(self, beta: np.ndarray) -> float:
+		"""Returns the value of the penalty."""
+		p, K = beta.shape
+		if self.weights is None:
+			self.weights = np.ones(p)
+		P_1 = np.apply_along_axis(lambda x: np.linalg.norm(x, 1), 1, beta)
+		if self.q == "inf":
+			P_q = np.apply_along_axis(lambda x: max(np.abs(x)), 1, beta)
+		else:
+			P_q = np.apply_along_axis(lambda x: np.power(sum(np.power(np.abs(x), self.q)), 1/self.q), 1, beta)
+		return sum(self.weights * (self.alpha * P_1 + (1. - self.alpha) * P_q))
+
 
 class GroupLasso(SparseGroupLasso):
 	"""Group Lasso regularization for Multi-task problems.

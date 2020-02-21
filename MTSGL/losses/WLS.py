@@ -44,7 +44,7 @@ class WLS(Loss):
 		return np.matmul(residuals.transpose(), self.w * residuals)[0,0]
 
 	def gradient(self, beta: np.ndarray):
-		return np.matmul(self.x.transpose(), self.w * (np.matmul(self.x, beta) - self.y))
+		return np.matmul(self.x.transpose(), self.w * (np.matmul(self.x, beta).reshape((-1, 1)) - self.y))
 
 	def predict(self, beta: np.ndarray):
 		return self._lin_predictor(beta)
