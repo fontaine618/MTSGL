@@ -46,38 +46,48 @@ class ConsensusADMM(Fit):
 		"""
 		beta_prev = beta
 		b = beta
+		r = b - beta
 		d = np.zeros_like(b)
 		t = 0
-		obj = self.loss.loss(b) + lam * self.reg.value(beta)
+		primal_obj = self.loss.loss(beta) + lam * self.reg.value(beta)
+		primal_obj_prev = -np.inf
+		dual_obj = self.loss.loss(b) + lam * self.reg.value(beta) + self.rho * np.tensordot(r, r)
+		dual_obj_prev = -np.inf
 		self.log_solve = pd.DataFrame({
-				"t": [t], "obj. value": [obj], "status": ["initial"]}
+				"t": [t], "primal obj.": [primal_obj], "dual obj.": [dual_obj], "status": ["initial"]}
 		)
 		while True:
 			t += 1
 			# update B
 			for k, task in enumerate(self.loss.data.tasks):
-				b[:, k] = self.loss[task].ridge(
+				b[:, [k]] = self.loss[task].ridge(
 					1./self.rho,
 					beta[:, [k]] - d[:, [k]],
-					b[:, [k]]
-				).reshape((-1,))
+					b[:, [k]],
+					threshold=1e-3
+				)
 			# update beta
-			beta = self.reg.proximal(b + d, lam)
+			beta = self.reg.proximal(b + d, lam / self.rho)
 			# update D
-			d += b - beta
-			primal_obj = self.loss.loss(beta) + lam * self.reg.value(beta)
+			r = b - beta
+			d += r
+			# convergence checks
+			primal_obj_prev = primal_obj
+			dual_obj_prev = dual_obj
+			primal_obj = self.loss.loss(b) + lam * self.reg.value(beta)
+			dual_obj = self.loss.loss(b) + lam * self.reg.value(beta) + self.rho * np.tensordot(r, r) / 2.
 			self.log_solve = self.log_solve.append(
 				pd.DataFrame({
-					"t": [t], "obj. value": [obj], "status": ["converged"]}
+					"t": [t], "primal obj.": [primal_obj], "dual obj.": [dual_obj], "status": ["converged"]}
 				),
 				ignore_index=True
 			)
-			if np.linalg.norm(beta - beta_prev, ord=2) < self.threshold:
+			if np.abs(primal_obj_prev - primal_obj) / primal_obj_prev < self.threshold:
 				break
 			beta_prev = beta
 			if t > self.max_iter:
 				print(self.log_solve)
 				raise ConvergenceError("maximum number of iteration reached.")
-		if self.verbose:
+		if self.verbose > 1:
 			print(self.log_solve)
 		return beta, t

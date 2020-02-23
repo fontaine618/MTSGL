@@ -55,6 +55,7 @@ class Data:
 		self.feature_names = None
 		self.x_mean = None
 		self.x_std_dev = None
+		self.standardize = None
 
 	def _summarize(self):
 		"""Builds a string summarizing the dataset."""

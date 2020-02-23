@@ -103,7 +103,8 @@ class SparseGroupLasso(Regularization):
 			self.weights = np.ones(p)
 		norms = np.apply_along_axis(np.linalg.norm, 1, grad0, self.q_dual)
 		denum = self.alpha * np.power(loss.data.n_tasks, 1.0/self.q_dual) + (1-self.alpha)
-		return max(norms / self.weights) / denum
+		vec = np.divide(norms, self.weights, where=self.weights > 0.0)
+		return max(vec) / denum
 
 	def value(self, beta: np.ndarray) -> float:
 		"""Returns the value of the penalty."""

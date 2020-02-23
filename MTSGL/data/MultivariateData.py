@@ -80,6 +80,7 @@ class MultivariateData(Data):
 		"""
 		super().__init__()
 		self.__name__ = "MultivariateData"
+		self.standardize = standardize
 		#  tasks
 		self.tasks = y_cols
 		self.n_tasks = len(self.tasks)
@@ -106,7 +107,7 @@ class MultivariateData(Data):
 			self.x_mean["(Intercept)"] = 0.0
 		self.x_std_dev = self._x.std()
 		self.x_std_dev = self.x_std_dev.where(self.x_std_dev > 1.0e-16, 1.0)
-		if standardize:
+		if self.standardize:
 			self._x = (self._x - self.x_mean) / self.x_std_dev
 
 	def _summarize_tasks(self):

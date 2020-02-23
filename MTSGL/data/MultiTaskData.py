@@ -86,6 +86,7 @@ class MultiTaskData(Data):
 		self.tasks = sorted(list(set(df[task_col])))
 		self.n_tasks = len(self.tasks)
 		#  data into dicts
+		self.standardize = standardize
 		self.n_obs = {}
 		self._y = {}
 		self._w = {}
@@ -116,7 +117,7 @@ class MultiTaskData(Data):
 			st_dev = self._x[task].std()
 			st_dev = st_dev.where(st_dev > 1.0e-16, 1.0)
 			self.x_std_dev[task] = st_dev
-			if standardize:
+			if self.standardize:
 				self._x[task] = (self._x[task] - self.x_mean[task]) / st_dev
 		for task in self.tasks:
 			self._w[task] = self._w[task] / ws_total

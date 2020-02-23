@@ -26,7 +26,7 @@ class Fit:
 			self.threshold = float(kwargs["threshold"])
 			if self.threshold < 1.0e-16:
 				raise ValueError("threshold must be above 1.0e-16")
-		self.verbose = True if "verbose" not in kwargs.keys() else bool(kwargs["verbose"])
+		self.verbose = 0 if "verbose" not in kwargs.keys() else kwargs["verbose"]
 		if "max_iter" not in kwargs.keys():
 			self.max_iter = 1_000
 		else:
@@ -97,7 +97,7 @@ class Fit:
 					break
 			finally:
 				pass
-		if self.verbose:
+		if self.verbose > 0:
 			print(self.log)
 		return beta
 
