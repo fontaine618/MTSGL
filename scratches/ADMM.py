@@ -1,12 +1,14 @@
 import numpy as np
 import pandas as pd
 import MTSGL
+import matplotlib.pyplot as plt
+import matplotlib
 
 pd.set_option('display.max_rows', 20)
 pd.set_option('display.max_columns', 20)
 pd.set_option('display.width', 1000)
 
-n = 300
+n = 3000
 p = 10
 
 x = np.random.normal(0, 1, (n, p))
@@ -40,20 +42,34 @@ weights[0] = 0.
 reg = MTSGL.regularizations.SparseGroupLasso(q=2, alpha=0.5, weights=weights)
 
 model = MTSGL.fit.ConsensusADMM(
-	loss, reg, n_lam=100, lam_frac=0.001, rho=1, max_iter=10000, verbose=1
+	loss, reg, n_lam=100, lam_frac=0.001, rho=1, max_iter=10000, verbose=1, threshold=1e-3
 )
 
-print(np.apply_along_axis(lambda x: max(np.abs(x)), 2, model.path).round(1))
-print(3., beta.T)
+beta_norm = np.apply_along_axis(lambda x: max(np.abs(x)), 2, model.path)
 
-print(model.path[0, :, :])
-print(model.path[99, :, :])
 
-self = model
 
-beta = self.path
 
-beta_d = beta / np.array(self.loss.data.x_std_dev)
 
-beta[99, :, :]
-beta_d[99, :, :]
+N = 256
+vals = np.ones((N, 4))
+vals[:128, 0] = np.linspace(0, 0, N//2)
+vals[:128, 1] = np.linspace(1, 0, N//2)
+vals[:128, 2] = np.linspace(1, 0, N//2)
+vals[128:, 0] = np.linspace(0, 1, N//2)
+vals[128:, 1] = np.linspace(0, 0, N//2)
+vals[128:, 2] = np.linspace(0, 1, N//2)
+newcmp = matplotlib.colors.ListedColormap(vals)
+
+
+beta_flat = model.path.reshape(100, -1)
+
+plt.figure(figsize=(10, 10))
+plt.imshow(beta_flat, cmap=newcmp, aspect='auto')
+plt.colorbar()
+plt.savefig("fig/test.png")
+
+plt.figure(figsize=(10, 10))
+plt.imshow(beta_norm, cmap='inferno', aspect='auto')
+plt.colorbar()
+plt.savefig("fig/test.png")

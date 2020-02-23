@@ -44,15 +44,12 @@ class ConsensusADMM(Fit):
 		ConvergenceError
 			If the solver does not reach appropriate convergence.
 		"""
-		beta_prev = beta
 		b = beta
 		r = b - beta
 		d = np.zeros_like(b)
 		t = 0
 		primal_obj = self.loss.loss(beta) + lam * self.reg.value(beta)
-		primal_obj_prev = -np.inf
 		dual_obj = self.loss.loss(b) + lam * self.reg.value(beta) + self.rho * np.tensordot(r, r)
-		dual_obj_prev = -np.inf
 		self.log_solve = pd.DataFrame({
 				"t": [t], "primal obj.": [primal_obj], "dual obj.": [dual_obj], "status": ["initial"]}
 		)
@@ -64,13 +61,23 @@ class ConsensusADMM(Fit):
 					1./self.rho,
 					beta[:, [k]] - d[:, [k]],
 					b[:, [k]],
-					threshold=1e-3
+					threshold=max(self.threshold, 1./np.power(2, t))
 				)
 			# update beta
 			beta = self.reg.proximal(b + d, lam / self.rho)
 			# update D
 			r = b - beta
 			d += r
+			# norms for convergence
+			r_norm = np.linalg.norm(r, 'fro')
+			s_norm = self.rho * r_norm
+			d_norm = np.linalg.norm(d, 'fro')
+			b_norm = np.linalg.norm(b, 'fro')
+			beta_norm = np.linalg.norm(beta, 'fro')
+			eps_primal = np.sqrt(self.loss.data.n_features * self.loss.data.n_tasks) * self.threshold + \
+				1e-3 * max(b_norm, beta_norm)
+			eps_dual = np.sqrt(self.loss.data.n_features * self.loss.data.n_tasks) * self.threshold + \
+				1e-3 * d_norm
 			# convergence checks
 			primal_obj_prev = primal_obj
 			dual_obj_prev = dual_obj
@@ -82,9 +89,9 @@ class ConsensusADMM(Fit):
 				),
 				ignore_index=True
 			)
-			if np.abs(primal_obj_prev - primal_obj) / primal_obj_prev < self.threshold:
+			# if np.abs(primal_obj_prev - primal_obj) / primal_obj_prev < self.threshold:
+			if r_norm < eps_primal and s_norm < eps_dual:
 				break
-			beta_prev = beta
 			if t > self.max_iter:
 				print(self.log_solve)
 				raise ConvergenceError("maximum number of iteration reached.")
