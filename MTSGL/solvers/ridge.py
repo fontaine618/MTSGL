@@ -57,7 +57,6 @@ def ridge(
 	# options
 	threshold = 1.0e-6 if "threshold" not in kwargs else kwargs["threshold"]
 	max_iter = 1000 if "max_iter" not in kwargs else kwargs["max_iter"]
-	adaptive_restart = True if "adaptive_restart" not in kwargs else kwargs["adaptive_restart"]
 	# initialize step size to hessian upper bound
 	step_size = 1. / (loss.hessian_upper_bound() + 1. / tau)
 	# first iteration
