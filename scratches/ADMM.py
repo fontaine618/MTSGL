@@ -8,8 +8,8 @@ pd.set_option('display.max_rows', 20)
 pd.set_option('display.max_columns', 20)
 pd.set_option('display.width', 1000)
 
-n = 3000
-p = 10
+n = 300
+p = 100
 
 x = np.random.normal(0, 1, (n, p))
 beta = np.random.randint(-2, 3, (p, 1))
@@ -42,7 +42,7 @@ weights[0] = 0.
 reg = MTSGL.regularizations.SparseGroupLasso(q=2, alpha=0.5, weights=weights)
 
 model = MTSGL.fit.ConsensusADMM(
-	loss, reg, n_lam=100, lam_frac=0.001, rho=1, max_iter=10000, verbose=1, threshold=1e-3
+	loss, reg, n_lam=100, lam_frac=0.001, rho=1, max_iter=10000, verbose=1
 )
 
 beta_norm = np.apply_along_axis(lambda x: max(np.abs(x)), 2, model.path)
@@ -64,12 +64,15 @@ newcmp = matplotlib.colors.ListedColormap(vals)
 
 beta_flat = model.path.reshape(100, -1)
 
+beta
+
 plt.figure(figsize=(10, 10))
 plt.imshow(beta_flat, cmap=newcmp, aspect='auto')
 plt.colorbar()
-plt.savefig("fig/test.png")
+plt.show()
 
 plt.figure(figsize=(10, 10))
 plt.imshow(beta_norm, cmap='inferno', aspect='auto')
 plt.colorbar()
-plt.savefig("fig/test.png")
+plt.show()
+

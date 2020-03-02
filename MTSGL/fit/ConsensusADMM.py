@@ -17,6 +17,18 @@ class ConsensusADMM(Fit):
 		self.path = self._solution_path()
 
 	def _set_additional_options(self, **kwargs):
+		if "eps_abs" not in kwargs.keys():
+			self.eps_abs = 1.0e-6
+		else:
+			self.eps_abs = float(kwargs["eps_abs"])
+			if self.eps_abs < 1.0e-16:
+				raise ValueError("eps_abs must be above 1.0e-16")
+		if "eps_rel" not in kwargs.keys():
+			self.eps_rel = 1.0e-3
+		else:
+			self.eps_rel = float(kwargs["eps_rel"])
+			if self.eps_rel < 1.0e-8:
+				raise ValueError("eps_rel must be above 1.0e-8")
 		if "rho" not in kwargs.keys():
 			self.rho = 1.
 		else:
@@ -61,7 +73,10 @@ class ConsensusADMM(Fit):
 					1./self.rho,
 					beta[:, [k]] - d[:, [k]],
 					b[:, [k]],
-					threshold=max(self.threshold, 1./np.power(2, t))
+					threshold=max(
+						np.sqrt(self.loss.data.n_features * self.loss.data.n_tasks) * self.eps_abs,
+						1./np.power(2, t)
+					)
 				)
 			# update beta
 			beta = self.reg.proximal(b + d, lam / self.rho)
@@ -74,14 +89,12 @@ class ConsensusADMM(Fit):
 			d_norm = np.linalg.norm(d, 'fro')
 			b_norm = np.linalg.norm(b, 'fro')
 			beta_norm = np.linalg.norm(beta, 'fro')
-			eps_primal = np.sqrt(self.loss.data.n_features * self.loss.data.n_tasks) * self.threshold + \
-				1e-3 * max(b_norm, beta_norm)
-			eps_dual = np.sqrt(self.loss.data.n_features * self.loss.data.n_tasks) * self.threshold + \
-				1e-3 * d_norm
+			eps_primal = np.sqrt(self.loss.data.n_features * self.loss.data.n_tasks) * self.eps_abs + \
+				self.eps_rel * max(b_norm, beta_norm)
+			eps_dual = np.sqrt(self.loss.data.n_features * self.loss.data.n_tasks) * self.eps_abs + \
+				self.eps_rel * d_norm * self.rho
 			# convergence checks
-			primal_obj_prev = primal_obj
-			dual_obj_prev = dual_obj
-			primal_obj = self.loss.loss(b) + lam * self.reg.value(beta)
+			primal_obj = self.loss.loss(beta) + lam * self.reg.value(beta)
 			dual_obj = self.loss.loss(b) + lam * self.reg.value(beta) + self.rho * np.tensordot(r, r) / 2.
 			self.log_solve = self.log_solve.append(
 				pd.DataFrame({
@@ -89,7 +102,6 @@ class ConsensusADMM(Fit):
 				),
 				ignore_index=True
 			)
-			# if np.abs(primal_obj_prev - primal_obj) / primal_obj_prev < self.threshold:
 			if r_norm < eps_primal and s_norm < eps_dual:
 				break
 			if t > self.max_iter:

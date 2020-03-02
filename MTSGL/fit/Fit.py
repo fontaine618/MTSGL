@@ -14,18 +14,11 @@ class Fit:
 	) -> None:
 		self.loss = loss
 		self.reg = reg
-		self.threshold = None
 		self.max_iter = None
 		self._set_options(**kwargs)
 		self._set_lambda(**kwargs)
 
 	def _set_options(self, **kwargs):
-		if "threshold" not in kwargs.keys():
-			self.threshold = 1.0e-6
-		else:
-			self.threshold = float(kwargs["threshold"])
-			if self.threshold < 1.0e-16:
-				raise ValueError("threshold must be above 1.0e-16")
 		self.verbose = 0 if "verbose" not in kwargs.keys() else kwargs["verbose"]
 		if "max_iter" not in kwargs.keys():
 			self.max_iter = 1_000

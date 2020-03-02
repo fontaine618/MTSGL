@@ -46,7 +46,6 @@ def ridge(
 		The number of iterations.
 
 	"""
-	METHODS = ["gd", "nesterov"]
 	if not v.size == x0.size:
 		raise ValueError("the dimensions of beta0 and v must agree")
 	if tau < 0.:
@@ -59,50 +58,28 @@ def ridge(
 	threshold = 1.0e-6 if "threshold" not in kwargs else kwargs["threshold"]
 	max_iter = 1000 if "max_iter" not in kwargs else kwargs["max_iter"]
 	adaptive_restart = True if "adaptive_restart" not in kwargs else kwargs["adaptive_restart"]
-	method = "nesterov" if "method" not in kwargs else kwargs["method"]
-	method = method.lower()
-	if method not in METHODS:
-		raise NotImplementedError("Method '{}' is not implemented. Only {} are implemented".format(method, METHODS))
 	# initialize step size to hessian upper bound
-	try:
-		if method == "nesterov":  # 1/L
-			step_size = 1. / (loss.hessian_upper_bound() + 1. / tau)
-		elif method == "gd":  # SC and SS case: 2/(L+mu)
-			step_size = 2. / (loss.hessian_upper_bound() + 2. / tau)
-	except:
-		raise ValueError("loss does not implement hessian_upper_bound()")
+	step_size = 1. / (loss.hessian_upper_bound() + 1. / tau)
 	# first iteration
 	t = 0
 	xt = x0
-	if method == "nesterov":
-		xtm1 = x0
+	xtm1 = x0
 	while True:
 		t += 1
 		x_prev = xt
-		if method == "nesterov" and adaptive_restart:
-			yt = xt + (xt - xtm1) * (t - 1) / (t + 2)
-			grad = loss.gradient(yt) + (yt - v) / tau
-			if np.matmul(grad.transpose(), xt - xtm1) > 0.:
-				# do a regular gd step
-				grad = loss.gradient(xt) + (xt - v) / tau
-				xt = xt - grad * step_size
-			else:
-				# use momentum
-				xt = yt - grad * step_size
-			xtm1 = x_prev
-		elif method == "nesterov":
-			yt = xt + (xt - xtm1) * (t - 1) / (t + 2)
-			grad = loss.gradient(yt) + (yt - v) / tau
-			xt = yt - grad * step_size
-			xtm1 = x_prev
-		elif method == "gd":
+		yt = xt + (xt - xtm1) * (t - 1) / (t + 2)
+		grad = loss.gradient(yt) + (yt - v) / tau
+		if np.matmul(grad.transpose(), xt - xtm1) > 0.:
+			# do a regular gd step
 			grad = loss.gradient(xt) + (xt - v) / tau
 			xt = xt - grad * step_size
 		else:
-			raise NotImplementedError("Method '{}' is not implemented. Only {} are implemented".format(method, METHODS))
+			# use momentum
+			xt = yt - grad * step_size
+		xtm1 = x_prev
 		step = np.linalg.norm(xt - x_prev, 2)
 		if t >= max_iter:
-			raise RuntimeError("ridge ({}) did not converge in {} iterations".format(method, t))
+			raise RuntimeError("ridge did not converge in {} iterations".format(t))
 		if step < threshold:
 			break
 	return xt, t
