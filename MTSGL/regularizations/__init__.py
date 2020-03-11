@@ -7,5 +7,5 @@ __all__ = ["Regularization", "SparseGroupLasso"]
 __version__ = '0.1'
 __author__ = ['Simon Fontaine', 'Jinming Li', 'Yang Li']
 
-from .Regularization import *
-from .SparseGroupLasso import *
+from .regularization import *
+from .sparsegrouplasso import *

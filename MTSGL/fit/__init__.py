@@ -1,4 +1,6 @@
-from .Fit import *
-from .ConsensusADMM import *
+__all__ = ["Fit", "ConsensusADMM", "SharingADMM"]
 
-__all__ = ["Fit", "ConsensusADMM"]
+from .fit import *
+from .consensusadmm import *
+from .sharingadmm import *
+from .sharingadmm_utils import *

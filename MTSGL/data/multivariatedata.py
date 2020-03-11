@@ -1,8 +1,7 @@
 import pandas as pd
 import numpy as np
 from typing import Union, Sequence, Optional
-
-from MTSGL.data.Data import Data
+from .data import Data
 
 
 class MultivariateData(Data):

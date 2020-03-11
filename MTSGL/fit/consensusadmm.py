@@ -1,6 +1,6 @@
 from MTSGL.losses import SeparableMTLoss
 from MTSGL.regularizations import Regularization
-from .Fit import Fit, ConvergenceError
+from . import Fit, ConvergenceError
 import numpy as np
 import pandas as pd
 

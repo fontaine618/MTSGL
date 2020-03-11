@@ -1,14 +1,14 @@
-"""data module.
+"""losses module.
 
-This module contains the classes defining data structures and utilities to translate data frames to them.
+This module contains the classes defining losses.
 """
 
-__all__ = ["Loss", "WLS", "MTLoss"]
+__all__ = ["Loss", "WLS", "MTLoss", "SeparableMTLoss", "MTWLS"]
 __version__ = '0.1'
 __author__ = ['Simon Fontaine', 'Jinming Li', 'Yang Li']
 
-from .Loss import *
-from .WLS import *
-from .MTLoss import *
+from .loss import Loss
+from .wls import WLS
+from .mtloss import MTLoss, SeparableMTLoss, MTWLS
 
 

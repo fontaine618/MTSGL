@@ -1,5 +1,5 @@
 import numpy as np
-from .Loss import Loss
+from .loss import Loss
 
 
 class WLS(Loss):
@@ -37,25 +37,32 @@ class WLS(Loss):
 		self.n, self.p = x.shape
 		eig = np.power(np.linalg.svd(self.x * np.sqrt(self.w), compute_uv=False), 2)
 		self.L = max(eig)
+		self.L_saturated = max(self.w)
 		self.mu = min(eig)
 
-	def loss(self, beta: np.ndarray):
-		residuals = np.matmul(self.x, beta) - self.y
-		return np.matmul(residuals.transpose(), self.w * residuals)[0,0]
+	def loss_from_linear_predictor(self, eta):
+		residuals = eta - self.y
+		return np.matmul(residuals.transpose(), self.w * residuals)[0, 0]
 
 	def gradient(self, beta: np.ndarray):
 		return np.matmul(self.x.transpose(), self.w * (np.matmul(self.x, beta).reshape((-1, 1)) - self.y))
 
 	def predict(self, beta: np.ndarray):
-		return self._lin_predictor(beta)
+		return self.lin_predictor(beta)
 
 	def ridge_closed_form(self, tau: float, v: np.ndarray):
 		"""Returns the ridge-regularized minimizer using the closed-form solution."""
 		mat = np.matmul(self.x.transpose(), self.w * self.x) + np.eye(self.p) / tau
 		return np.linalg.solve(mat, np.matmul(self.x.transpose(), self.w * self.y) + v / tau)
 
+	def hessian_saturated_upper_bound(self):
+		return self.L_saturated
+
 	def hessian_upper_bound(self):
 		return self.L
 
 	def hessian_lower_bound(self):
 		return self.mu
+
+	def gradient_saturated(self, z: np.ndarray):
+		return self.w * (z - self.y)

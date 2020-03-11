@@ -8,8 +8,8 @@ __version__ = '0.1'
 __author__ = ['Simon Fontaine', 'Jinming Li', 'Yang Li']
 
 from .utils import *
-from .Data import *
-from .MultivariateData import *
-from .MultiTaskData import *
+from .data import *
+from .multivariatedata import *
+from .multitaskdata import *
 
 

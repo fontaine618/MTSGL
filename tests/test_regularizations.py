@@ -1,7 +1,7 @@
 import unittest
 import MTSGL.regularizations
-import numpy as np
 import MTSGL.proximal
+import numpy as np
 
 
 class TestSparseGroupLasso(unittest.TestCase):

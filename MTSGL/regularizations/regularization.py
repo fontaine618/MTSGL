@@ -1,5 +1,5 @@
 import numpy as np
-from MTSGL.losses.MTLoss import MTLoss
+from MTSGL.losses import MTLoss
 
 
 class Regularization:

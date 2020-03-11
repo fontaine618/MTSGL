@@ -1,4 +1,4 @@
-from .Regularization import Regularization
+from . import Regularization
 from typing import Union, Optional, List
 import numpy as np
 import MTSGL.proximal

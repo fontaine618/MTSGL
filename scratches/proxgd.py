@@ -3,7 +3,7 @@ import pandas as pd
 import MTSGL
 
 
-n = 30
+n = 300
 p = 4
 
 x = np.random.normal(0, 1, (n, p))
@@ -37,14 +37,18 @@ weights[0] = 0.
 reg = MTSGL.regularizations.SparseGroupLasso(q=2, alpha=0.5, weights=weights)
 
 beta0 = np.zeros((p+1, 3))
-w = data._y
+w = {task: l.y for task, l in loss.items()}
 
-lam = 0.1
+lam = 0.45
 rho = 1.0
 
-L = max([l.hessian_upper_bound() for task, l in loss.items()])
-step_size = 1. / (L + lam / rho)
+print(MTSGL.losses.proxgd(
+	loss,
+	reg,
+	beta0,
+	w,
+	lam,
+	rho
+))
 
 
-
-betat

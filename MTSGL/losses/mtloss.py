@@ -1,7 +1,8 @@
 import numpy as np
-from MTSGL.losses import Loss, WLS
-from MTSGL.data.Data import Data
-from typing import Optional
+from .loss import Loss
+from .wls import WLS
+from MTSGL.data import Data
+from typing import Optional, Dict
 
 
 class MTLoss:
@@ -25,12 +26,26 @@ class MTLoss:
 
 	def __init__(self, data: Data, **kwargs):
 		self.data = data
+		self.L = None
+		self.L_saturated = None
 
 	def loss(self, beta: np.ndarray, task: Optional[str]):
 		pass
 
+	def loss_from_linear_predictor(self, eta: Dict[str, np.ndarray], task: Optional[str]):
+		pass
+
 	def gradient(self, beta: np.ndarray, task: Optional[str]):
 		pass
+
+	def gradient_saturated(self, z: Dict[str, np.ndarray]):
+		pass
+
+	def cov_upper_bound(self):
+		return self.L
+
+	def hessian_saturated_upper_bound(self):
+		return self.L_saturated
 
 
 class SeparableMTLoss(MTLoss):
@@ -109,6 +124,26 @@ class SeparableMTLoss(MTLoss):
 				beta = np.zeros((self.data.n_features, 1))
 			return self[task].loss(beta)
 
+	def loss_from_linear_predictor(self, eta: Dict[str, np.ndarray], task: Optional[str]):
+		if task is None:
+			if eta is None:
+				eta = {task: np.zeros_like(self.loss[task].y) for task in self.loss}
+			return sum([loss.loss_from_linear_predictor(eta[task]) for task, loss in self.iteritems()])
+		else:
+			if eta is None:
+				eta = np.zeros_like(self.loss[task].y)
+			return self[task].loss_from_linear_predictor(eta)
+
+	def _set_upper_bounds(self):
+		self.L = max([loss.hessian_upper_bound() for task, loss in self.items()])
+		self.L_saturated = max([loss.hessian_saturated_upper_bound() for task, loss in self.items()])
+
+	def gradient_saturated(self, z: Dict[str, np.ndarray]):
+		grad = dict()
+		for task, loss, in self.items():
+			grad[task] = loss.gradient_saturated(z[task])
+		return grad
+
 
 class MTWLS(SeparableMTLoss):
 	"""Multi-task Weighted Least Squares loss.
@@ -124,3 +159,4 @@ class MTWLS(SeparableMTLoss):
 				self.data.y(task).to_numpy().reshape((-1, 1)),
 				self.data.w(task).to_numpy().reshape((-1, 1))
 			)
+		self._set_upper_bounds()

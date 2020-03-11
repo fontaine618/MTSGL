@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import MTSGL
 
-n = 100
+n = 12
 p = 5
 tasks = ["0", "1", "2"]
 df = pd.DataFrame(data={
@@ -35,3 +35,15 @@ print(data)
 
 for l in loss.items():
 	print(l)
+
+z = {task: l.y + 1.0 for task, l in loss.items()}
+
+loss.gradient_saturated(z)
+loss.hessian_saturated_upper_bound()
+
+
+z0 = {task: l.y + 1.0 for task, l in loss.items()}
+a = {task: l.y - 1.0 for task, l in loss.items()}
+tau = 1.0
+
+MTSGL.fit.ridge_saturated(loss, z0, a, tau)

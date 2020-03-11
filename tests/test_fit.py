@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import pandas as pd
-import MTSGL
+import MTSGL.fit
 
 
 class TestDfToData(unittest.TestCase):

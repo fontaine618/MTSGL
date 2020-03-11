@@ -2,6 +2,7 @@ import numpy as np
 import MTSGL.solvers
 from typing import Optional
 
+
 class Loss:
 	"""Abstract single-task loss.
 
@@ -33,13 +34,19 @@ class Loss:
 		self.x = x
 		self.y = y
 
-	def _lin_predictor(self, beta):
+	def lin_predictor(self, beta):
 		return np.matmul(self.x, beta)
 
 	def loss(self, beta):
+		return self.loss_from_linear_predictor(self.lin_predictor(beta))
+
+	def loss_from_linear_predictor(self, eta):
 		pass
 
 	def gradient(self, beta):
+		pass
+
+	def hessian_saturated_upper_bound(self, **kwargs):
 		pass
 
 	def hessian_upper_bound(self, **kwargs):
@@ -65,4 +72,7 @@ class Loss:
 		)[0]
 
 	def predict(self, beta: np.ndarray):
+		pass
+
+	def gradient_saturated(self, z: np.ndarray):
 		pass
