@@ -41,15 +41,23 @@ weights[0] = 0.
 
 reg = MTSGL.regularizations.SparseGroupLasso(q=2, alpha=0.5, weights=weights)
 
-model = MTSGL.fit.ConsensusADMM(
+model_sharing = MTSGL.fit.SharingADMM(
 	loss, reg, n_lam=100, lam_frac=0.001, rho=1, max_iter=10000, verbose=1
 )
 
+
+model_consensus = MTSGL.fit.ConsensusADMM(
+	loss, reg, n_lam=100, lam_frac=0.001, rho=1, max_iter=10000, verbose=1
+)
+
+
+
+
+model = model_consensus
+
+model = model_sharing
+
 beta_norm = np.apply_along_axis(lambda x: max(np.abs(x)), 2, model.path)
-
-
-
-
 
 N = 256
 vals = np.ones((N, 4))
@@ -76,3 +84,4 @@ plt.imshow(beta_norm, cmap='inferno', aspect='auto')
 plt.colorbar()
 plt.show()
 
+model_consensus.path[25, :] - model_sharing.path[-1, :]

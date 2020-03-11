@@ -76,6 +76,12 @@ class SeparableMTLoss(MTLoss):
 	def __getitem__(self, task):
 		return self._losses[task]
 
+	def get(self, task, default=None):
+		if task in self:
+			return self[task]
+		else:
+			return default
+
 	def __repr__(self):
 		return repr(self._losses)
 
@@ -124,11 +130,11 @@ class SeparableMTLoss(MTLoss):
 				beta = np.zeros((self.data.n_features, 1))
 			return self[task].loss(beta)
 
-	def loss_from_linear_predictor(self, eta: Dict[str, np.ndarray], task: Optional[str]):
+	def loss_from_linear_predictor(self, eta: Dict[str, np.ndarray], task: Optional[str] = None):
 		if task is None:
 			if eta is None:
-				eta = {task: np.zeros_like(self.loss[task].y) for task in self.loss}
-			return sum([loss.loss_from_linear_predictor(eta[task]) for task, loss in self.iteritems()])
+				eta = {task: np.zeros_like(loss.y) for task, loss in self.loss.items()}
+			return sum([loss.loss_from_linear_predictor(eta[task]) for task, loss in self.items()])
 		else:
 			if eta is None:
 				eta = np.zeros_like(self.loss[task].y)

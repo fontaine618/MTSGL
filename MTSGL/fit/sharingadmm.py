@@ -59,9 +59,9 @@ class SharingADMM(Fit):
 		"""
 		# initialization
 		beta = beta
-		eta = {task: loss.lin_predictor(beta[:, [k]]) for k, (task, loss) in enumerate(self.loss.iteritems())}
-		z = {task: np.zeros_like(eta[task]) for k, (task, loss) in enumerate(self.loss.iteritems())}
-		r = {task: etak - loss[task].lin_predictor(beta) for task, (etak, loss) in dict_zip(eta, self.loss).items()}
+		eta = {task: loss.lin_predictor(beta[:, [k]]) for k, (task, loss) in enumerate(self.loss.items())}
+		z = {task: np.zeros_like(eta[task]) for k, (task, loss) in enumerate(self.loss.items())}
+		r = {task: etak - loss.lin_predictor(beta) for task, (etak, loss) in dict_zip(eta, self.loss).items()}
 		t = 0
 		# setup logging
 		dual_obj, primal_obj = self.compute_obj(beta, eta, lam, r, z)
@@ -71,14 +71,14 @@ class SharingADMM(Fit):
 		while True:
 			t += 1
 			# update eta
-			eta, _ = ridge_saturated(
+			eta, n_ridge = ridge_saturated(
 				loss=self.loss,
 				z0=eta,
-				a={task: self.loss[task].lin_predictor(beta) - z[task] for task in self.loss},
+				a={task: loss.lin_predictor(beta[:, [k]]) - z[task] for k, (task, loss) in enumerate(self.loss.items())},
 				tau=self.rho
 			)
 			# update beta
-			beta = proxgd(
+			beta, n_proxgd = proxgd(
 				loss=self.loss,
 				reg=self.reg,
 				beta0=beta,
@@ -86,15 +86,16 @@ class SharingADMM(Fit):
 				lam=lam,
 				rho=self.rho
 			)
+			print(lam, t, n_ridge, n_proxgd)
 			# update z and r
-			r = {task: etak - loss.lin_predictor(beta) for task, (etak, loss) in dict_zip(eta, self.loss).items()}
+			r = {task: eta[task] - loss.lin_predictor(beta[:, [k]]) for k, (task, loss) in enumerate(self.loss.items())}
 			z = {task: zk + rk for task, (zk, rk) in dict_zip(z, r).items()}
 			# norms for convergence
-			r_norm = {task: np.linalg.norm(rk, 2) for task, rk in r.items()}
-			s_norm = {
-				task: self.rho * np.linalg.norm(np.matmul(loss.x.T, rk), 2)
+			r_norm = [np.linalg.norm(rk, 2) for task, rk in r.items()]
+			s_norm = [
+				self.rho * np.linalg.norm(np.matmul(loss.x.T, rk), 2)
 				for task, (rk, loss) in dict_zip(r, self.loss).items()
-			}
+			]
 			xbeta_norm = np.sqrt(sum([
 				np.linalg.norm(loss.lin_predictor(beta[:, [k]]), 2) ** 2
 				for k, loss in enumerate(self.loss.values())
@@ -107,8 +108,7 @@ class SharingADMM(Fit):
 				np.linalg.norm(np.matmul(loss.x.T, zk), 2) ** 2
 				for loss, zk in dict_zip(self.loss, z).values()
 			]))
-
-
+			# compute thresholds
 			eps_primal = np.sqrt(sum(self.loss.data.n_obs.values())) * self.eps_abs + \
 				self.eps_rel * max(xbeta_norm, eta_norm)
 			eps_dual = np.sqrt(self.loss.data.n_features * self.loss.data.n_tasks) * self.eps_abs + \
@@ -121,7 +121,7 @@ class SharingADMM(Fit):
 				),
 				ignore_index=True
 			)
-			if r_norm < eps_primal and s_norm < eps_dual:
+			if np.linalg.norm(np.array(r_norm), 2) < eps_primal and np.linalg.norm(np.array(s_norm), 2) < eps_dual:
 				break
 			if t > self.max_iter:
 				print(self.log_solve)
