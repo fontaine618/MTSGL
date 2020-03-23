@@ -6,7 +6,7 @@ from typing import Any, Dict, Tuple
 
 
 def dict_zip(
-		*dicts: Tuple[Dict[Any, Any]],
+		*dicts: Dict[Any, Any],
 		default: Any = None
 ) -> Dict[Any, Tuple[Any]]:
 	return {key: tuple(d.get(key, default) for d in dicts) for key in set(chain(*dicts))}
@@ -69,23 +69,33 @@ def proxgd(
 	# first iteration
 	t = 0
 	betat = beta0
+	bt = betat
+	thetat = 1.
+	# loop until convergence
 	while True:
 		t += 1
 		beta_prev = betat
 		# compute gradient
 		grad = np.zeros_like(beta0)
+		# TODO Extract this
 		for k, (task, l) in enumerate(loss.items()):
 			grad[:, [k]] = rho * np.matmul(
-				(l.x * l.w).T, np.matmul(l.x, betat[:, [k]]) - v[task]
+				(l.x * l.w).T,
+				np.matmul(l.x, bt[:, [k]]) - v[task]
 			)
+		# TODO Adaptive restarts
 		# gradient step
-		betat = betat - step_size * grad
+		betat = bt - step_size * grad
 		# proximal
 		betat = reg.proximal(betat, lam * step_size)
+		# compute momentum step
+		thetatm1 = thetat
+		thetat = 0.5 * (1. + np.sqrt(1. + 4. * thetat ** 2))
+		bt = betat + (thetatm1 - 1.) * (betat - beta_prev) / thetat
 		# check convergence
 		step = np.linalg.norm(betat - beta_prev, 2)
 		if t >= max_iter:
-			raise RuntimeError("ridge did not converge in {} iterations".format(t))
+			raise RuntimeError("proxgd did not converge in {} iterations".format(t))
 		if step < threshold:
 			break
 	return betat, t

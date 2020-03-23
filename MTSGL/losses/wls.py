@@ -41,11 +41,10 @@ class WLS(Loss):
 		self.mu = min(eig)
 
 	def loss_from_linear_predictor(self, eta):
-		residuals = eta - self.y
-		return np.matmul(residuals.transpose(), self.w * residuals)[0, 0]
+		return np.sum(self.w * (eta - self.y) ** 2)
 
 	def gradient(self, beta: np.ndarray):
-		return np.matmul(self.x.transpose(), self.w * (np.matmul(self.x, beta).reshape((-1, 1)) - self.y))
+		return np.matmul(self.x.transpose(), self.w * (self.lin_predictor(beta) - self.y))
 
 	def predict(self, beta: np.ndarray):
 		return self.lin_predictor(beta)
@@ -64,5 +63,5 @@ class WLS(Loss):
 	def hessian_lower_bound(self):
 		return self.mu
 
-	def gradient_saturated(self, z: np.ndarray):
-		return self.w * (z - self.y)
+	def gradient_saturated(self, eta: np.ndarray):
+		return self.w * (eta - self.y)

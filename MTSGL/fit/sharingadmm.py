@@ -5,6 +5,7 @@ from .sharingadmm_utils import proxgd, ridge_saturated, dict_zip
 import numpy as np
 import pandas as pd
 
+
 class SharingADMM(Fit):
 
 	def __init__(
@@ -19,13 +20,13 @@ class SharingADMM(Fit):
 
 	def _set_additional_options(self, **kwargs):
 		if "eps_abs" not in kwargs.keys():
-			self.eps_abs = 1.0e-6
+			self.eps_abs = 1.0e-10
 		else:
 			self.eps_abs = float(kwargs["eps_abs"])
 			if self.eps_abs < 1.0e-16:
 				raise ValueError("eps_abs must be above 1.0e-16")
 		if "eps_rel" not in kwargs.keys():
-			self.eps_rel = 1.0e-3
+			self.eps_rel = 1.0e-6
 		else:
 			self.eps_rel = float(kwargs["eps_rel"])
 			if self.eps_rel < 1.0e-8:
@@ -37,7 +38,7 @@ class SharingADMM(Fit):
 			if self.rho <= 0.:
 				raise ValueError("rho must be positive, received {}".format(self.rho))
 
-	def _solve(self, beta: np.ndarray, lam: float):
+	def _solve(self, beta0: np.ndarray, lam: float, **kwargs):
 		"""
 
 		Parameters
@@ -58,7 +59,7 @@ class SharingADMM(Fit):
 			If the solver does not reach appropriate convergence.
 		"""
 		# initialization
-		beta = beta
+		beta = beta0
 		eta = {task: loss.lin_predictor(beta[:, [k]]) for k, (task, loss) in enumerate(self.loss.items())}
 		z = {task: np.zeros_like(eta[task]) for k, (task, loss) in enumerate(self.loss.items())}
 		r = {task: etak - loss.lin_predictor(beta) for task, (etak, loss) in dict_zip(eta, self.loss).items()}
@@ -75,7 +76,8 @@ class SharingADMM(Fit):
 				loss=self.loss,
 				z0=eta,
 				a={task: loss.lin_predictor(beta[:, [k]]) - z[task] for k, (task, loss) in enumerate(self.loss.items())},
-				tau=self.rho
+				tau=1.0 / self.rho,
+				threshold=np.sqrt(sum(self.loss.data.n_obs.values())) * self.eps_abs
 			)
 			# update beta
 			beta, n_proxgd = proxgd(
@@ -83,14 +85,16 @@ class SharingADMM(Fit):
 				reg=self.reg,
 				beta0=beta,
 				v={task: etak + zk for task, (etak, zk) in dict_zip(eta, z).items()},
-				lam=lam,
-				rho=self.rho
+				lam=lam / self.rho,
+				rho=1.0,
+				threshold=np.sqrt(self.loss.data.n_features * self.loss.data.n_tasks) * self.eps_abs
 			)
 			print(lam, t, n_ridge, n_proxgd)
 			# update z and r
 			r = {task: eta[task] - loss.lin_predictor(beta[:, [k]]) for k, (task, loss) in enumerate(self.loss.items())}
 			z = {task: zk + rk for task, (zk, rk) in dict_zip(z, r).items()}
 			# norms for convergence
+			# TODO extract this
 			r_norm = [np.linalg.norm(rk, 2) for task, rk in r.items()]
 			s_norm = [
 				self.rho * np.linalg.norm(np.matmul(loss.x.T, rk), 2)
@@ -121,6 +125,8 @@ class SharingADMM(Fit):
 				),
 				ignore_index=True
 			)
+			print(np.linalg.norm(np.array(r_norm), 2), eps_primal,
+				  np.linalg.norm(np.array(s_norm), 2), eps_dual)
 			if np.linalg.norm(np.array(r_norm), 2) < eps_primal and np.linalg.norm(np.array(s_norm), 2) < eps_dual:
 				break
 			if t > self.max_iter:

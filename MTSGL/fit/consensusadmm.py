@@ -18,13 +18,13 @@ class ConsensusADMM(Fit):
 
 	def _set_additional_options(self, **kwargs):
 		if "eps_abs" not in kwargs.keys():
-			self.eps_abs = 1.0e-6
+			self.eps_abs = 1.0e-10
 		else:
 			self.eps_abs = float(kwargs["eps_abs"])
 			if self.eps_abs < 1.0e-16:
 				raise ValueError("eps_abs must be above 1.0e-16")
 		if "eps_rel" not in kwargs.keys():
-			self.eps_rel = 1.0e-3
+			self.eps_rel = 1.0e-6
 		else:
 			self.eps_rel = float(kwargs["eps_rel"])
 			if self.eps_rel < 1.0e-8:
@@ -73,10 +73,7 @@ class ConsensusADMM(Fit):
 					1./self.rho,
 					beta[:, [k]] - d[:, [k]],
 					b[:, [k]],
-					threshold=max(
-						np.sqrt(self.loss.data.n_features * self.loss.data.n_tasks) * self.eps_abs,
-						1./np.power(2, t)
-					)
+					threshold=np.sqrt(self.loss.data.n_features * self.loss.data.n_tasks) * self.eps_abs
 				)
 			# update beta
 			beta = self.reg.proximal(b + d, lam / self.rho)
@@ -84,6 +81,7 @@ class ConsensusADMM(Fit):
 			r = b - beta
 			d += r
 			# norms for convergence
+			# TODO extract this
 			r_norm = np.linalg.norm(r, 'fro')
 			s_norm = self.rho * r_norm
 			d_norm = np.linalg.norm(d, 'fro')
@@ -102,6 +100,7 @@ class ConsensusADMM(Fit):
 				),
 				ignore_index=True
 			)
+			print(r_norm, eps_primal, s_norm, eps_dual)
 			if r_norm < eps_primal and s_norm < eps_dual:
 				break
 			if t > self.max_iter:

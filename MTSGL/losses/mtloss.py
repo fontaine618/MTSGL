@@ -124,7 +124,7 @@ class SeparableMTLoss(MTLoss):
 		if task is None:
 			if beta is None:
 				beta = np.zeros((self.data.n_features, self.data.n_tasks))
-			return sum([loss.loss(beta[:, k]) for k, loss in enumerate(self.values())])
+			return sum([loss.loss(beta[:, [k]]) for k, loss in enumerate(self.values())])
 		else:
 			if beta is None:
 				beta = np.zeros((self.data.n_features, 1))
