@@ -37,22 +37,22 @@ class TestDfToData(unittest.TestCase):
 		reg = MTSGL.regularizations.SparseGroupLasso(q=2, alpha=0.5, weights=weights)
 		return loss, reg
 
-	def test_consensus_admm(self):
-		loss, reg = self.create_model()
-		model = MTSGL.fit.ConsensusADMM(
-			loss, reg, n_lam=10, lam_frac=0.001, rho=1, max_iter=10000, verbose=0
-		)
-		beta_norm = np.apply_along_axis(lambda x: max(np.abs(x)), 2, model.path)
-		try:
-			np.testing.assert_array_almost_equal(
-				beta_norm[9, ],
-				np.array([2.01000651, 2.11337167, 1.09623504, 0.22079414, 1.30309887, 0.30546993])
-			)
-			res = True
-		except AssertionError as err:
-			res = False
-			print(err)
-		self.assertTrue(res, "incorrect solution for fixed problem")
+	# def test_consensus_admm(self):
+	# 	loss, reg = self.create_model()
+	# 	model = MTSGL.fit.ConsensusADMM(
+	# 		loss, reg, n_lam=10, lam_frac=0.001, rho=1, max_iter=10000, verbose=0
+	# 	)
+	# 	beta_norm = np.apply_along_axis(lambda x: max(np.abs(x)), 2, model.path)
+	# 	try:
+	# 		np.testing.assert_array_almost_equal(
+	# 			beta_norm[9, ],
+	# 			np.array([2.01000651, 2.11337167, 1.09623504, 0.22079414, 1.30309887, 0.30546993])
+	# 		)
+	# 		res = True
+	# 	except AssertionError as err:
+	# 		res = False
+	# 		print(err)
+	# 	self.assertTrue(res, "incorrect solution for fixed problem")
 
 
 if __name__ == '__main__':

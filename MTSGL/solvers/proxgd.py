@@ -1,4 +1,4 @@
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Optional
 import numpy as np
 from losses import MTLoss
 from regularizations import Regularization
@@ -8,10 +8,10 @@ def proxgd(
 		loss: MTLoss,
 		reg: Regularization,
 		beta0: np.ndarray,
-		v: Dict[str, np.ndarray],
 		lam: float,
 		rho: float,
-		ls=False,
+		ls: Optional[bool] = False,
+		v: Optional[Dict[str, np.ndarray]] = None,
 		**kwargs
 ) -> Tuple[np.ndarray, int]:
 	"""Optimizes a loss for some regularization.
@@ -55,10 +55,13 @@ def proxgd(
 		raise ValueError("lam must be non-negative")
 	if rho < 0.:
 		raise ValueError("rho must be non-negative")
+	if ls and v is None:
+		raise ValueError("when ls=True, v must be specified")
 	# options
 	threshold = 1.0e-6 if "threshold" not in kwargs else kwargs["threshold"]
 	max_iter = 1000 if "max_iter" not in kwargs else kwargs["max_iter"]
 	# initialize step size to hessian upper bound
+	# TODO this should branch on ls=T/F, for now this is fine for LS
 	step_size = 1. / (loss.hessian_upper_bound() * rho)
 	# first iteration
 	t = 0
@@ -70,14 +73,10 @@ def proxgd(
 		t += 1
 		beta_prev = betat
 		# compute gradient
-		grad = np.zeros_like(beta0)
-		# TODO Extract this
 		if ls:
+			grad = np.zeros_like(beta0)
 			for k, (task, l) in enumerate(loss.items()):
-				grad[:, [k]] = rho * np.matmul(
-					(l.x * l.w).T,
-					np.matmul(l.x, bt[:, [k]]) - v[task]
-				)
+				grad[:, [k]] = rho * np.matmul(l.x.T, l.w * (l.lin_predictor(bt[:, [k]]) - v[task]))
 		else:
 			# TODO add regular gradient
 			pass

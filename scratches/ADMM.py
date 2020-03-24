@@ -43,12 +43,12 @@ weights[0] = 0.
 reg = MTSGL.regularizations.SparseGroupLasso(q=2, alpha=0.5, weights=weights)
 
 model_sharing = MTSGL.fit.SharingADMM(
-	loss, reg, n_lam=100, lam_frac=0.001, rho=1., max_iter=10000, verbose=2
+	loss, reg, n_lam=100, lam_frac=0.001, rho=1., verbose=2
 )
 
 
 model_consensus = MTSGL.fit.ConsensusADMM(
-	loss, reg, n_lam=100, lam_frac=0.001, rho=1., max_iter=10000, verbose=2
+	loss, reg, n_lam=100, lam_frac=0.001, rho=1., verbose=2
 )
 
 print(model_consensus.path)
@@ -81,3 +81,7 @@ for model in [model_sharing, model_consensus]:
 
 print(model_sharing.log)
 print(model_consensus.log)
+
+
+w = w.reshape((-1,1))
+x * w

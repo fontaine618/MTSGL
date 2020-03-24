@@ -17,25 +17,25 @@ class Fit:
 		self.max_iter = None
 		self._set_options(**kwargs)
 		self._set_lambda(**kwargs)
+		self.path = self._solution_path()
 
 	def _set_options(self, **kwargs):
-		self.verbose = 0 if "verbose" not in kwargs.keys() else kwargs["verbose"]
-		if "max_iter" not in kwargs.keys():
-			self.max_iter = 1_000
-		else:
-			self.max_iter = int(kwargs["max_iter"])
-			if not (1 <= self.max_iter <= 100_000):
-				raise ValueError("max_iter must be between 1 and 100,000")
-		if "max_size" not in kwargs.keys():
-			self.max_size = sum(self.loss.data.n_obs.values())
-		else:
-			self.max_size = int(kwargs["max_size"])
-			if not (1 <= self.max_size <= self.loss.data.n_features):
-				raise ValueError("max_iter must be between 1 and p={}".format(self.loss.data.n_features))
-		self._set_additional_options(**kwargs)
-
-	def _set_additional_options(self, **kwargs):
-		pass
+		self.verbose = 0 if "verbose" not in kwargs else kwargs["verbose"]
+		self.max_iter = 10_000 if "max_iter" not in kwargs else int(kwargs["max_iter"])
+		self.max_size = self.loss.data.n_features if "max_size" not in kwargs else int(kwargs["max_size"])
+		self.eps_abs = 1.0e-6 if "eps_abs" not in kwargs else float(kwargs["eps_abs"])
+		self.eps_rel = 1.0e-3 if "eps_rel" not in kwargs else float(kwargs["eps_rel"])
+		self.rho = 1. if "rho" not in kwargs else float(kwargs["rho"])
+		if not (1 <= self.max_iter <= 100_000):
+			raise ValueError("max_iter must be between 1 and 100,000")
+		if not (1 <= self.max_size <= self.loss.data.n_features):
+			raise ValueError("max_size must be between 1 and p={}".format(self.loss.data.n_features))
+		if self.eps_abs < 1.0e-16:
+			raise ValueError("eps_abs must be above 1.0e-16")
+		if self.eps_rel < 1.0e-8:
+			raise ValueError("eps_rel must be above 1.0e-8")
+		if self.rho <= 0.:
+			raise ValueError("rho must be positive, received {}".format(self.rho))
 
 	def _set_lambda(self, **kwargs):
 		self.lam_decrease = None
@@ -59,13 +59,13 @@ class Fit:
 		return self.reg.max_lam(self.loss)
 
 	def _solution_path(self):
-		self.log = pd.DataFrame(columns=["l", "lambda", "size", "status", "nb. iter"])
+		self.log = pd.DataFrame(columns=["l", "lambda", "size", "status", "nb. iter", "loss", "obj"])
 		beta = np.zeros((self.n_lam, self.loss.data.n_features, self.loss.data.n_tasks))
 		beta[:] = np.nan
 		b = np.zeros((self.loss.data.n_features, self.loss.data.n_tasks))
 		for l, lam in enumerate(self.lam):
 			try:
-				b, nb_iter = self._solve(b, lam)
+				b, nb_iter, loss, obj = self._solve(b, lam)
 			except ConvergenceError as error:
 				self.log = self.log.append(
 					pd.DataFrame({"l": [l], "lambda": [lam], "status": ["error"]}),
@@ -77,7 +77,10 @@ class Fit:
 			else:
 				p = sum(np.apply_along_axis(np.linalg.norm, 1, b, 1) > 0.0)
 				self.log = self.log.append(
-					pd.DataFrame({"l": [l], "lambda": [lam], "size": [p], "status": ["converged"], "nb. iter": [nb_iter]}),
+					pd.DataFrame({
+						"l": [l], "lambda": [lam], "size": [p], "status": ["converged"], "nb. iter": [nb_iter],
+						"loss": loss, "obj": obj
+					}),
 					ignore_index=True
 				)
 				beta[l, :, :] = b
@@ -115,7 +118,6 @@ class Fit:
 			If the solver does not reach appropriate convergence.
 		"""
 		pass
-
 
 class ConvergenceError(Exception):
 	"""Raised when convergence criteria are not met."""
