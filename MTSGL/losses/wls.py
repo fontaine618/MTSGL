@@ -36,12 +36,12 @@ class WLS(Loss):
 		self.w = w
 		self.n, self.p = x.shape
 		eig = np.power(np.linalg.svd(self.x * np.sqrt(self.w), compute_uv=False), 2)
-		self.L = max(eig)
-		self.L_saturated = max(self.w)
-		self.mu = min(eig)
+		self.L = np.max(eig)
+		self.L_saturated = np.max(self.w)
+		self.mu = np.min(eig)
 
 	def loss_from_linear_predictor(self, eta):
-		return np.sum(self.w * (eta - self.y) ** 2)
+		return np.sum(self.w * (eta - self.y) ** 2) * 0.5
 
 	def gradient(self, beta: np.ndarray):
 		return np.matmul(self.x.transpose(), self.w * (self.lin_predictor(beta) - self.y))

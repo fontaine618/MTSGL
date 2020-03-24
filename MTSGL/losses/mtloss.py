@@ -5,7 +5,7 @@ from MTSGL.data import Data
 from typing import Optional, Dict
 
 
-class MTLoss:
+class MTLoss():
 	"""Multi-task loss.
 
 	This class implements a loss function with multi-task structure.
@@ -41,7 +41,7 @@ class MTLoss:
 	def gradient_saturated(self, z: Dict[str, np.ndarray]):
 		pass
 
-	def cov_upper_bound(self):
+	def hessian_upper_bound(self):
 		return self.L
 
 	def hessian_saturated_upper_bound(self):

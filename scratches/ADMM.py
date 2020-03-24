@@ -43,7 +43,7 @@ weights[0] = 0.
 reg = MTSGL.regularizations.SparseGroupLasso(q=2, alpha=0.5, weights=weights)
 
 model_sharing = MTSGL.fit.SharingADMM(
-	loss, reg, n_lam=100, lam_frac=0.001, rho=1., max_iter=10000, verbose=21
+	loss, reg, n_lam=100, lam_frac=0.001, rho=1., max_iter=10000, verbose=2
 )
 
 
