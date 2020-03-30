@@ -69,7 +69,7 @@ class Loss:
 			v=v,
 			tau=tau,
 			**kwargs
-		)[0]
+		)
 
 	def predict(self, beta: np.ndarray):
 		pass

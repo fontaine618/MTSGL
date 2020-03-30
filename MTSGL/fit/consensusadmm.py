@@ -15,7 +15,7 @@ class ConsensusADMM(Fit):
 	):
 		super().__init__(loss, reg, **kwargs)
 
-	def _solve(self, beta: np.ndarray, lam: float):
+	def _solve(self, beta: np.ndarray, lam: float, l: int):
 		"""
 
 		Parameters
@@ -39,9 +39,9 @@ class ConsensusADMM(Fit):
 		while True:
 			t += 1
 			# update
-			beta, d, r = self._update(b, beta, d, lam)
+			beta, d, r, n_ridge = self._update(b, beta, d, lam)
 			# logging
-			loss, original_obj = self._log(b, beta, lam, r, t)
+			loss, original_obj = self._log(b, beta, lam, l, r, t, n_ridge)
 			# norms for convergence
 			eps_dual, eps_primal, r_norm, s_norm = self._compute_convergence_checks(b, beta, d, r)
 			# convergence checks
@@ -56,8 +56,9 @@ class ConsensusADMM(Fit):
 
 	def _update(self, b, beta, d, lam):
 		# update B
-		for k, task in enumerate(self.loss.data.tasks):
-			b[:, [k]] = self.loss[task].ridge(
+		n_ridge = np.array([0 for _ in self.loss])
+		for k, (task, loss) in enumerate(self.loss.items()):
+			b[:, [k]], n_ridge[k] = loss.ridge(
 				1. / self.rho,
 				beta[:, [k]] - d[:, [k]],
 				b[:, [k]],
@@ -68,15 +69,15 @@ class ConsensusADMM(Fit):
 		# update r and d
 		r = b - beta
 		d += r
-		return beta, d, r
+		return beta, d, r, n_ridge.mean()
 
-	def _log(self, b, beta, lam, r, t):
+	def _log(self, b, beta, lam, l, r, t, n_ridge):
 		loss, augmented_obj, original_obj = self._compute_obj(b, beta, lam, r)
 		self.log_solve = self.log_solve.append(
 			pd.DataFrame({
-				"t": [t], "loss": loss,
+				"l": [l], "t": [t], "loss": loss,
 				"original obj.": [original_obj], "augmented obj.": [augmented_obj],
-				"status": ["converged"]
+				"status": ["ADMM iteration"], "n_grad": n_ridge, "n_prox": 1
 			}),
 			ignore_index=True
 		)
@@ -88,10 +89,10 @@ class ConsensusADMM(Fit):
 		d = np.zeros_like(b)
 		t = 0
 		loss, augmented_obj, original_obj = self._compute_obj(b, beta, lam, r)
-		self.log_solve = pd.DataFrame({
-			"t": [t], "loss": loss, "original obj.": [original_obj],
-			"augmented obj.": [augmented_obj], "status": ["initial"]}
-		)
+		self.log_solve = self.log_solve.append(pd.DataFrame({
+			"l": [0], "t": [t], "loss": loss, "original obj.": [original_obj],
+			"augmented obj.": [augmented_obj], "status": ["initial"], "n_grad": [0], "n_prox": [0]}
+		))
 		return b, d, t
 
 	def _compute_obj(self, b, beta, lam, r):

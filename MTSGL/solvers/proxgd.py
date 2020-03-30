@@ -66,23 +66,24 @@ def proxgd(
 	# first iteration
 	t = 0
 	betat = beta0
+	betatm1 = betat
 	bt = betat
 	thetat = 1.
 	# loop until convergence
 	while True:
 		t += 1
+		# store previous beta value
 		beta_prev = betat
 		# compute gradient
-		if ls:
-			grad = np.zeros_like(beta0)
-			for k, (task, l) in enumerate(loss.items()):
-				grad[:, [k]] = rho * np.matmul(l.x.T, l.w * (l.lin_predictor(bt[:, [k]]) - v[task]))
+		grad = compute_grad(bt, loss, ls, rho, v)
+		# adaptive restarts
+		if np.sum(grad * (betat - betatm1)) > 0.:
+			# regular GD step
+			grad = compute_grad(betat, loss, ls, rho, v)
+			betat = betat - step_size * grad
 		else:
-			# TODO add regular gradient
-			pass
-		# TODO Adaptive restarts
-		# gradient step
-		betat = bt - step_size * grad
+			# momentum step
+			betat = bt - step_size * grad
 		# proximal
 		betat = reg.proximal(betat, lam * step_size)
 		# compute momentum step
@@ -91,8 +92,21 @@ def proxgd(
 		bt = betat + (thetatm1 - 1.) * (betat - beta_prev) / thetat
 		# check convergence
 		step = np.linalg.norm(betat - beta_prev, 2)
+		# update previous beta
+		betatm1 = beta_prev
 		if t >= max_iter:
-			raise RuntimeError("proxgd did not converge in {} iterations".format(t))
+			break
+			# raise RuntimeError("proxgd did not converge in {} iterations".format(t))
 		if step < threshold:
 			break
 	return betat, t
+
+
+def compute_grad(bt, loss, ls, rho, v):
+	if ls:
+		grad = np.zeros_like(bt)
+		for k, (task, l) in enumerate(loss.items()):
+			grad[:, [k]] = rho * np.matmul(l.x.T, l.w * (l.lin_predictor(bt[:, [k]]) - v[task]))
+	else:
+		grad = loss.gradient(bt)
+	return grad

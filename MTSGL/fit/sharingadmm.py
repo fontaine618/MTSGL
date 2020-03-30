@@ -17,38 +17,20 @@ class SharingADMM(Fit):
 	):
 		super().__init__(loss, reg, **kwargs)
 
-	def _solve(self, beta0: np.ndarray, lam: float, **kwargs):
-		"""
-
-		Parameters
-		----------
-		beta : array-like
-			The initial parameter value. (p, K)
-		lam : float
-			The regularization parameter.
-
-		Returns
-		-------
-		beta : array-like
-			The final estimate. (p, K)
-
-		Raises
-		------
-		ConvergenceError
-			If the solver does not reach appropriate convergence.
-		"""
+	def _solve(self, beta0: np.ndarray, lam: float, l: int, **kwargs):
+		lam /= 100.
 		# initialization
 		beta, eta, t, z = self._initialize(beta0, lam)
 		while True:
 			t += 1
 			# update
-			beta, loss, n_proxgd, n_ridge, r, z = self._update(beta, eta, lam, z)
+			beta, n_proxgd, n_ridge, r, z = self._update(beta, eta, lam, z)
 			# logging
-			loss, original_obj = self._log(beta, eta, lam, n_proxgd, n_ridge, r, t, z)
+			loss, original_obj = self._log(beta, eta, lam, l, n_proxgd, n_ridge, r, t, z)
 			# norms for convergence
 			eps_dual, eps_primal, r_norm, s_norm = self._compute_convergence_checks(beta, eta, r, z)
 			# convergence checks
-			if np.linalg.norm(np.array(r_norm), 2) < eps_primal and np.linalg.norm(np.array(s_norm), 2) < eps_dual:
+			if r_norm < eps_primal and s_norm < eps_dual:
 				break
 			if t > self.max_iter:
 				print(self.log_solve)
@@ -88,15 +70,15 @@ class SharingADMM(Fit):
 		# update z and r
 		r = {task: eta[task] - loss.lin_predictor(beta[:, [k]]) for k, (task, loss) in enumerate(self.loss.items())}
 		z = {task: zk + rk for task, (zk, rk) in dict_zip(z, r).items()}
-		return beta, loss, n_proxgd, n_ridge, r, z
+		return beta, n_proxgd, n_ridge, r, z
 
-	def _log(self, beta, eta, lam, n_proxgd, n_ridge, r, t, z):
+	def _log(self, beta, eta, lam, l, n_proxgd, n_ridge, r, t, z):
 		loss, augmented_obj, original_obj = self._compute_obj(beta, eta, lam, r, z)
 		self.log_solve = self.log_solve.append(
 			pd.DataFrame({
-				"t": [t], "loss": loss, "original obj.": [original_obj],
-				"augmented obj.": [augmented_obj], "status": ["converged"],
-				"n_ridge": n_ridge, "n_proxgd": n_proxgd
+				"l": [l], "t": [t], "loss": loss,
+				"original obj.": [original_obj], "augmented obj.": [augmented_obj],
+				"status": ["ADMM iteration"], "n_grad": n_ridge + n_proxgd, "n_prox": n_proxgd
 			}),
 			ignore_index=True
 		)
@@ -114,11 +96,10 @@ class SharingADMM(Fit):
 		t = 0
 		# setup logging
 		loss, augmented_obj, original_obj = self._compute_obj(beta, eta, lam, r, z)
-		self.log_solve = pd.DataFrame({
-			"t": [t], "loss": loss, "original obj.": [original_obj],
-			"augmented obj.": [augmented_obj], "status": ["initial"],
-			"n_ridge": 0, "n_proxgd": 0
-		})
+		self.log_solve = self.log_solve.append(pd.DataFrame({
+			"l": [0], "t": [t], "loss": loss, "original obj.": [original_obj],
+			"augmented obj.": [augmented_obj], "status": ["initial"], "n_grad": [0], "n_prox": [0]}
+		))
 		return beta, eta, t, z
 
 	def _compute_convergence_checks(self, beta, eta, r, z):
@@ -127,6 +108,8 @@ class SharingADMM(Fit):
 			self.rho * np.linalg.norm(np.matmul(loss.x.T, rk), 2)
 			for task, (rk, loss) in dict_zip(r, self.loss).items()
 		]
+		r_norm = np.linalg.norm(np.array(r_norm), 2)
+		s_norm = np.linalg.norm(np.array(s_norm), 2)
 		xbeta_norm = np.sqrt(sum([
 			np.linalg.norm(loss.lin_predictor(beta[:, [k]]), 2) ** 2
 			for k, loss in enumerate(self.loss.values())

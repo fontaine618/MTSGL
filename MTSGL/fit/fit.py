@@ -60,12 +60,15 @@ class Fit:
 
 	def _solution_path(self):
 		self.log = pd.DataFrame(columns=["l", "lambda", "size", "status", "nb. iter", "loss", "obj"])
+		self.log_solve = pd.DataFrame(
+			columns=["l", "t", "loss", "original obj.", "augmented obj.", "status", "n_grad", "n_prox"]
+		)
 		beta = np.zeros((self.n_lam, self.loss.data.n_features, self.loss.data.n_tasks))
 		beta[:] = np.nan
 		b = np.zeros((self.loss.data.n_features, self.loss.data.n_tasks))
 		for l, lam in enumerate(self.lam):
 			try:
-				b, nb_iter, loss, obj = self._solve(b, lam)
+				b, nb_iter, loss, obj = self._solve(b, lam, l)
 			except ConvergenceError as error:
 				self.log = self.log.append(
 					pd.DataFrame({"l": [l], "lambda": [lam], "status": ["error"]}),
