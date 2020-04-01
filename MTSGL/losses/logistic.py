@@ -1,16 +1,17 @@
 import numpy as np
 from .loss import Loss
+from scipy.special import expit
 
 
-class WLS(Loss):
-	"""Single-task (Weighted) Least Squares loss.
+class Logistic(Loss):
+	"""Single-task Logistic loss.
 
 	Attributes
 	----------
 	x: array-like
 		The features.
 	y: array-like
-		The responses.
+		The responses (0/1).
 	w: array-like
 		The observation weights.
 	L: float
@@ -36,24 +37,20 @@ class WLS(Loss):
 		self.w = w
 		self.n, self.p = x.shape
 		eig = np.power(np.linalg.svd(self.x * np.sqrt(self.w), compute_uv=False), 2)
-		self.L = np.max(eig)
-		self.L_ls = self.L
+		self.L_ls = np.max(eig)
+		self.L = self.L_ls / 4
 		self.L_saturated = np.max(self.w)
 		self.mu = np.min(eig)
 
 	def loss_from_linear_predictor(self, eta):
-		return np.sum(self.w * (eta - self.y) ** 2) * 0.5
+		p = expit(eta).clip(1.0e-10, 1. - 1.0e-10)
+		return - np.sum(self.w * (self.y * np.log(p) + (1 - self.y) * np.log(1 - p)))
 
 	def gradient(self, beta: np.ndarray):
-		return np.matmul(self.x.transpose(), self.w * (self.lin_predictor(beta) - self.y))
+		return np.matmul(self.x.transpose(), self.gradient_saturated(self.lin_predictor(beta)))
 
 	def predict(self, beta: np.ndarray):
-		return self.lin_predictor(beta)
-
-	def ridge_closed_form(self, tau: float, v: np.ndarray):
-		"""Returns the ridge-regularized minimizer using the closed-form solution."""
-		mat = np.matmul(self.x.transpose(), self.w * self.x) + np.eye(self.p) / tau
-		return np.linalg.solve(mat, np.matmul(self.x.transpose(), self.w * self.y) + v / tau)
+		return expit(self.lin_predictor(beta))
 
 	def hessian_saturated_upper_bound(self):
 		return self.L_saturated
@@ -68,4 +65,4 @@ class WLS(Loss):
 		return self.mu
 
 	def gradient_saturated(self, eta: np.ndarray):
-		return self.w * (eta - self.y)
+		return - self.w * (self.y - expit(eta))

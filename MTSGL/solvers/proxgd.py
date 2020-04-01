@@ -61,8 +61,10 @@ def proxgd(
 	threshold = 1.0e-6 if "threshold" not in kwargs else kwargs["threshold"]
 	max_iter = 1000 if "max_iter" not in kwargs else kwargs["max_iter"]
 	# initialize step size to hessian upper bound
-	# TODO this should branch on ls=T/F, for now this is fine for LS
-	step_size = 1. / (loss.hessian_upper_bound() * rho)
+	if ls:
+		step_size = 1. / (loss.hessian_ls_upper_bound() * rho)
+	else:
+		step_size = 1. / (loss.hessian_upper_bound() * rho)
 	# first iteration
 	t = 0
 	betat = beta0

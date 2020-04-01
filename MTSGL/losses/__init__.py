@@ -9,6 +9,7 @@ __author__ = ['Simon Fontaine', 'Jinming Li', 'Yang Li']
 
 from .loss import Loss
 from .wls import WLS
-from .mtloss import MTLoss, SeparableMTLoss, MTWLS
+from .logistic import Logistic
+from .mtloss import MTLoss, SeparableMTLoss, MTWLS, MTLogReg
 
 

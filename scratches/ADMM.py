@@ -5,11 +5,13 @@ import MTSGL
 import matplotlib.pyplot as plt
 import matplotlib
 
+from scipy.special import expit
+
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 
-n = 300
+n = 3000
 p = 10
 
 x = np.random.normal(0, 1, (n, p))
@@ -17,7 +19,9 @@ beta = np.random.randint(-2, 3, (p, 1))
 tasks = [0, 1, 2]
 task = np.random.choice(tasks, n)
 w = np.random.uniform(0, 1, n)
-y = np.matmul(x, beta) + task.reshape((-1, 1)) + np.random.normal(0, 1, (n, 1))
+eta = np.matmul(x, beta) + task.reshape((-1, 1))
+# y = np.matmul(x, beta) + task.reshape((-1, 1)) + np.random.normal(0, 1, (n, 1))
+y = np.random.binomial(1, expit(eta))
 
 df = pd.DataFrame(data={
 	"var"+str(i): x[:, i] for i in range(p)
@@ -35,7 +39,8 @@ data = MTSGL.data.utils.df_to_data(
 	standardize=False
 )
 
-loss = MTSGL.losses.MTWLS(data)
+# loss = MTSGL.losses.MTWLS(data)
+loss = MTSGL.losses.MTLogReg(data)
 
 weights = np.ones(p+1)
 weights[0] = 0.
@@ -51,16 +56,17 @@ model_sharing = MTSGL.fit.SharingADMM(
 )
 
 model_consensus = MTSGL.fit.ConsensusADMM(
-	loss, reg, n_lam=100, lam_frac=0.01, rho=1., verbose=0
+	loss, reg, n_lam=100, lam_frac=0.01, rho=0.1, verbose=0
 )
 
 
 plt.plot(model_proxgd.log_solve[["original obj."]])
-plt.plot(model_sharing.log_solve[["original obj.", "augmented obj."]])
-plt.plot(model_consensus.log_solve[["original obj.", "augmented obj."]])
+plt.plot(model_sharing.log_solve[["original obj."]])
+plt.plot(model_consensus.log_solve[["original obj."]])
+
 plt.show()
 
-print(model_sharing.log)
+print(model_proxgd.log)
 print(model_consensus.log)
 
 print(model_consensus.path[14, :, :])
@@ -80,18 +86,16 @@ vals[128:, 1] = np.linspace(1, 0, N // 2)
 vals[128:, 2] = np.linspace(1, 1, N // 2)
 newcmp = matplotlib.colors.ListedColormap(vals)
 
-for model in [model_sharing, model_consensus, model_proxgd]:
+for model in [model_consensus, model_proxgd]:
 	beta_norm = np.apply_along_axis(lambda x: max(np.abs(x)), 2, model.path)
 	beta_flat = model.path.reshape(100, -1)
 	plt.figure(figsize=(10, 10))
 	plt.imshow(beta_flat, cmap=newcmp, aspect='auto')
 	plt.colorbar()
+	plt.title(model)
 	plt.show()
 	plt.figure(figsize=(10, 10))
 	plt.imshow(beta_norm, cmap='inferno', aspect='auto')
 	plt.colorbar()
+	plt.title(model)
 	plt.show()
-
-
-w = w.reshape((-1, 1))
-x * w

@@ -29,7 +29,7 @@ class ProximalGD(Fit):
 				reg=self.reg,
 				beta0=beta,
 				lam=lam,
-				rho=self.rho,
+				rho=1.0,
 				ls=False,
 				threshold=np.sqrt(self.loss.data.n_features * self.loss.data.n_tasks) * self.eps_abs,
 				max_iter=1

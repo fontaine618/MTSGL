@@ -1,5 +1,6 @@
 import numpy as np
 from .loss import Loss
+from .logistic import Logistic
 from .wls import WLS
 from MTSGL.data import Data
 from typing import Optional, Dict
@@ -27,6 +28,7 @@ class MTLoss():
 	def __init__(self, data: Data, **kwargs):
 		self.data = data
 		self.L = None
+		self.L_ls = None
 		self.L_saturated = None
 
 	def loss(self, beta: np.ndarray, task: Optional[str]):
@@ -46,6 +48,9 @@ class MTLoss():
 
 	def hessian_saturated_upper_bound(self):
 		return self.L_saturated
+
+	def hessian_ls_upper_bound(self):
+		return self.L_ls
 
 
 class SeparableMTLoss(MTLoss):
@@ -130,10 +135,10 @@ class SeparableMTLoss(MTLoss):
 				beta = np.zeros((self.data.n_features, 1))
 			return self[task].loss(beta)
 
-	def loss_from_linear_predictor(self, eta: Dict[str, np.ndarray], task: Optional[str] = None):
+	def loss_from_linear_predictor(self, eta: Optional[Dict[str, np.ndarray]] = None, task: Optional[str] = None):
 		if task is None:
 			if eta is None:
-				eta = {task: np.zeros_like(loss.y) for task, loss in self.loss.items()}
+				eta = {task: np.zeros_like(loss.y) for task, loss in self.items()}
 			return sum([loss.loss_from_linear_predictor(eta[task]) for task, loss in self.items()])
 		else:
 			if eta is None:
@@ -142,6 +147,7 @@ class SeparableMTLoss(MTLoss):
 
 	def _set_upper_bounds(self):
 		self.L = max([loss.hessian_upper_bound() for task, loss in self.items()])
+		self.L_ls = max([loss.hessian_ls_upper_bound() for task, loss in self.items()])
 		self.L_saturated = max([loss.hessian_saturated_upper_bound() for task, loss in self.items()])
 
 	def gradient_saturated(self, z: Dict[str, np.ndarray]):
@@ -161,6 +167,23 @@ class MTWLS(SeparableMTLoss):
 		super().__init__(data)
 		for task in self.data.tasks:
 			self[task] = WLS(
+				self.data.x(task).to_numpy(),
+				self.data.y(task).to_numpy().reshape((-1, 1)),
+				self.data.w(task).to_numpy().reshape((-1, 1))
+			)
+		self._set_upper_bounds()
+
+
+class MTLogReg(SeparableMTLoss):
+	"""Multi-task Logistic Regression loss.
+
+	This class implements the multi-label classification loss (y = 0/1 in each task).
+	"""
+
+	def __init__(self, data: Data):
+		super().__init__(data)
+		for task in self.data.tasks:
+			self[task] = Logistic(
 				self.data.x(task).to_numpy(),
 				self.data.y(task).to_numpy().reshape((-1, 1)),
 				self.data.w(task).to_numpy().reshape((-1, 1))

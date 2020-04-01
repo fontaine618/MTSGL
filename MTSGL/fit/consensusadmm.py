@@ -3,6 +3,7 @@ from regularizations import Regularization
 from . import Fit, ConvergenceError
 import numpy as np
 import pandas as pd
+from multiprocessing import Pool
 
 
 class ConsensusADMM(Fit):
