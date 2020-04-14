@@ -49,6 +49,7 @@ class SharingADMM(Fit):
 		# 	threshold=np.sqrt(sum(self.loss.data.n_obs.values())) * self.eps_abs
 		# )
 		# for LS, we can do it in closed form:
+
 		for k, (task, loss) in enumerate(self.loss.items()):
 			mat = np.diag(loss.w.reshape((-1))) + self.rho * np.eye(loss.n)
 			eta[task] = np.linalg.solve(

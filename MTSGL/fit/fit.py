@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from MTSGL.losses import MTLoss
 from MTSGL.regularizations import Regularization
+from time import time
 
 
 class Fit:
@@ -26,6 +27,7 @@ class Fit:
 		self.eps_abs = 1.0e-6 if "eps_abs" not in kwargs else float(kwargs["eps_abs"])
 		self.eps_rel = 1.0e-3 if "eps_rel" not in kwargs else float(kwargs["eps_rel"])
 		self.rho = 1. if "rho" not in kwargs else float(kwargs["rho"])
+		self.parallel = False if "parallel" not in kwargs else bool(kwargs["parallel"])
 		if not (1 <= self.max_iter <= 100_000):
 			raise ValueError("max_iter must be between 1 and 100,000")
 		if not (1 <= self.max_size <= self.loss.data.n_features):
@@ -59,16 +61,18 @@ class Fit:
 		return self.reg.max_lam(self.loss)
 
 	def _solution_path(self):
-		self.log = pd.DataFrame(columns=["l", "lambda", "size", "status", "nb. iter", "loss", "obj"])
+		self.log = pd.DataFrame(columns=["l", "lambda", "size", "status", "nb. iter", "time", "loss", "obj"])
 		self.log_solve = pd.DataFrame(
-			columns=["l", "t", "loss", "original obj.", "augmented obj.", "status", "n_grad", "n_prox"]
+			columns=["l", "t", "loss", "original obj.", "augmented obj.", "status", "n_grad", "n_prox", "time"]
 		)
 		beta = np.zeros((self.n_lam, self.loss.data.n_features, self.loss.data.n_tasks))
 		beta[:] = np.nan
 		b = np.zeros((self.loss.data.n_features, self.loss.data.n_tasks))
 		for l, lam in enumerate(self.lam):
 			try:
+				t0 = time()
 				b, nb_iter, loss, obj = self._solve(b, lam, l)
+				dt = time() - t0
 			except ConvergenceError as error:
 				self.log = self.log.append(
 					pd.DataFrame({"l": [l], "lambda": [lam], "status": ["error"]}),
@@ -82,7 +86,7 @@ class Fit:
 				self.log = self.log.append(
 					pd.DataFrame({
 						"l": [l], "lambda": [lam], "size": [p], "status": ["converged"], "nb. iter": [nb_iter],
-						"loss": loss, "obj": obj
+						"loss": loss, "obj": obj, "time": dt
 					}),
 					ignore_index=True
 				)

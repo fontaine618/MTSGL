@@ -3,7 +3,12 @@ from regularizations import Regularization
 from . import Fit, ConvergenceError
 import numpy as np
 import pandas as pd
-from multiprocessing import Pool
+from time import time
+from joblib import Parallel, delayed
+
+
+def _ridge(loss, rho, beta, d, b, tr):
+	return loss.ridge(1. / rho, beta - d, b, threshold=tr)
 
 
 class ConsensusADMM(Fit):
@@ -40,9 +45,11 @@ class ConsensusADMM(Fit):
 		while True:
 			t += 1
 			# update
+			t0 = time()
 			beta, d, r, n_ridge = self._update(b, beta, d, lam)
+			dt = time() - t0
 			# logging
-			loss, original_obj = self._log(b, beta, lam, l, r, t, n_ridge)
+			loss, original_obj = self._log(b, beta, lam, l, r, t, n_ridge, dt)
 			# norms for convergence
 			eps_dual, eps_primal, r_norm, s_norm = self._compute_convergence_checks(b, beta, d, r)
 			# convergence checks
@@ -58,13 +65,25 @@ class ConsensusADMM(Fit):
 	def _update(self, b, beta, d, lam):
 		# update B
 		n_ridge = np.array([0 for _ in self.loss])
-		for k, (task, loss) in enumerate(self.loss.items()):
-			b[:, [k]], n_ridge[k] = loss.ridge(
-				1. / self.rho,
-				beta[:, [k]] - d[:, [k]],
-				b[:, [k]],
-				threshold=np.sqrt(self.loss.data.n_features * self.loss.data.n_tasks) * self.eps_abs
+
+		tr = np.sqrt(self.loss.data.n_features * self.loss.data.n_tasks) * self.eps_abs
+		if self.parallel:
+			out = Parallel(n_jobs=len(self.loss), prefer="threads")(
+				delayed(_ridge)(loss, self.rho, beta[:, [k]], d[:, [k]], b[:, [k]], tr)
+				for k, loss in enumerate(self.loss.values())
 			)
+
+			for k, (bk, n) in enumerate(out):
+				b[:, [k]], n_ridge[k] = bk, n
+		else:
+			for k, (task, loss) in enumerate(self.loss.items()):
+				b[:, [k]], n_ridge[k] = loss.ridge(
+					1. / self.rho,
+					beta[:, [k]] - d[:, [k]],
+					b[:, [k]],
+					threshold=np.sqrt(self.loss.data.n_features * self.loss.data.n_tasks) * self.eps_abs
+				)
+
 		# update beta
 		beta = self.reg.proximal(b + d, lam / self.rho)
 		# update r and d
@@ -72,13 +91,13 @@ class ConsensusADMM(Fit):
 		d += r
 		return beta, d, r, n_ridge.mean()
 
-	def _log(self, b, beta, lam, l, r, t, n_ridge):
+	def _log(self, b, beta, lam, l, r, t, n_ridge, dt):
 		loss, augmented_obj, original_obj = self._compute_obj(b, beta, lam, r)
 		self.log_solve = self.log_solve.append(
 			pd.DataFrame({
 				"l": [l], "t": [t], "loss": loss,
 				"original obj.": [original_obj], "augmented obj.": [augmented_obj],
-				"status": ["ADMM iteration"], "n_grad": n_ridge, "n_prox": 1
+				"status": ["ADMM iteration"], "n_grad": n_ridge, "n_prox": 1, "time": dt
 			}),
 			ignore_index=True
 		)
@@ -91,7 +110,7 @@ class ConsensusADMM(Fit):
 		t = 0
 		loss, augmented_obj, original_obj = self._compute_obj(b, beta, lam, r)
 		self.log_solve = self.log_solve.append(pd.DataFrame({
-			"l": [0], "t": [t], "loss": loss, "original obj.": [original_obj],
+			"l": [0], "t": [t], "loss": loss, "original obj.": [original_obj], "time": 0.,
 			"augmented obj.": [augmented_obj], "status": ["initial"], "n_grad": [0], "n_prox": [0]}
 		))
 		return b, d, t
